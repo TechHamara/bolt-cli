@@ -1,0 +1,100 @@
+name: Bolt CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: # This let's us trigger the workflow manually from GitHub.
+
+jobs:
+  annotation-processor:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 8
+      - uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 8.3
+          build-root-directory: processor
+      - name: Execute build
+        working-directory: processor
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build
+
+  cli:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: x86_64-linux
+          - os: macos-12
+            target: x86_64-apple-darwin
+          - os: windows-2022
+            target: x86_64-windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1.5.1
+      - name: Install dependencies
+        run: dart pub get
+      - name: Verify formatting
+        if: ${{ github.event_name == 'pull_request' }}
+        run: dart format -o none --set-exit-if-changed .
+      - name: Run build_runner
+        run: dart run build_runner build --delete-conflicting-outputs
+      - name: Analyze source
+        if: ${{ github.event_name == 'pull_request' }}
+        run: dart analyze
+      - name: Build executable
+        shell: bash
+        run: |
+          mkdir build
+          if [ "$OS" = "Windows_NT" ]; then
+            dart compile exe -o build/bolt.exe bin/bolt.dart
+          else
+            dart compile exe -o build/bolt bin/bolt.dart
+          fi
+      - name: Upload executable
+        uses: actions/upload-artifact@v3
+        with:
+          if-no-files-found: error
+          name: bolt-${{ matrix.target }}
+          path: build/*
+
+  create-release:
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    needs: [cli, annotation-processor]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4.1.7
+      - name: Download JAR dependencies
+        run: |
+          mkdir libs && cd libs
+          wget https://github.com/mit-cml/appinventor-sources/raw/master/appinventor/lib/kawa/kawa-1.11-modified.jar
+          wget https://github.com/mit-cml/appinventor-sources/raw/master/appinventor/lib/physicaloid/physicaloid-library.jar
+          wget https://dl.google.com/android/repository/platform-33_r02.zip && unzip platform-33_r02.zip 
+          cp android-13/android.jar android-33.jar
+          rm -r android-13 platform-33_r02.zip
+      - name: Create platform archives
+        run: |
+          mkdir archives
+          for VAR in x86_64-linux x86_64-windows x86_64-apple-darwin
+          do
+            # Move the executable to bin dir
+            mkdir bolt-$VAR/bin && mv bolt-$VAR/bolt* bolt-$VAR/bin
+            # Copy JARs downloaded in prev step
+            cp libs/ bolt-$VAR -r
+            # Create ZIP
+            cd bolt-$VAR && zip ../archives/bolt-$VAR.zip . -r9
+            cd ..
+          done
+      - name: Create a new draft release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          fail_on_unmatched_files: true
+          files: archives/*.zip

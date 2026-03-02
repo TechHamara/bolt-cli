@@ -1,0 +1,45 @@
+plugins {
+    id 'java-library'
+}
+
+version = '2.0.1'
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    options.encoding = 'UTF-8'
+}
+
+java {
+    withSourcesJar()
+}
+
+javadoc {
+    options.encoding = 'UTF-8'
+    options.charSet = 'UTF-8'
+    options.docEncoding = 'UTF-8'
+    failOnError = false
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = 'Bolt Annotations'
+                description = 'A superset of MIT AI2 component annotations for extensions built with Bolt.'
+
+                developers {
+                    developer {
+                        id = 'mit-appinventor-contributors'
+                        name = 'MIT App Inventor Contributors'
+                    }
+                    developer {
+                        id = 'techhamara'
+                        name = 'TechHamara'
+                    }
+                }
+            }
+        }
+    }
+}

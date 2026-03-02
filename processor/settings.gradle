@@ -1,0 +1,3 @@
+rootProject.name = 'bolt-processor'
+include ':annotations'
+include ':processor'

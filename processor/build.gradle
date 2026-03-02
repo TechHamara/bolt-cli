@@ -1,0 +1,37 @@
+subprojects {
+    apply plugin: 'maven-publish'
+
+    group = 'io.github.techhamara.bolt'
+
+    publishing {
+        repositories {
+            maven {
+                name = 'OSSRH'
+                url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+                credentials {
+                    username = project.properties['ossrh.username']
+                    password = project.properties['ossrh.password']
+                }
+            }
+        }
+
+        publications {
+            mavenJava(MavenPublication) {
+                pom {
+                    url = 'https://github.com/TechHamara/bolt-cli/tree/2.0/processor'
+                    licenses {
+                        license {
+                            name = 'GPL-3.0'
+                            url = 'https://raw.githubusercontent.com/TechHamara/bolt-cli/main/LICENSE'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git://github.com/TechHamara/bolt-cli.git'
+                        developerConnection = 'scm:git:ssh://github.com/TechHamara/bolt-cli.git'
+                        url = 'https://github.com/TechHamara/bolt-cli'
+                    }
+                }
+            }
+        }
+    }
+}
