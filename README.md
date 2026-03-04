@@ -1,6 +1,5 @@
 ![Banner.png](https://github.com/user-attachments/assets/b354a91d-4290-4200-bb17-d06ff03f8d23)
 
-<<<<<<< HEAD
 # Bolt ✨
 **The Modern Compiler at Lightning Speed Extension Builder for MIT App Inventor 2**
 
@@ -221,4 +220,3 @@ Let's make extension development a delightful experience! Happy coding! 💻
 
 # bolt-cli
 A Modern Extension Builder for MIT App Inventor 2
->>>>>>> 1356b1c32fc534492b09801d0d5a70ba0cf31c3c
