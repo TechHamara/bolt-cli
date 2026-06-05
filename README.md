@@ -1,5 +1,10 @@
 ![Banner.png](https://github.com/user-attachments/assets/b354a91d-4290-4200-bb17-d06ff03f8d23)
 
+## Comming soon...
+
+![Comming.gif](https://github.com/user-attachments/assets/c33c2ab4-b19d-428a-bafe-260440e42a56)
+
+
 # ⚡ Bolt CLI
 
 **Bolt CLI** is a modern, high-performance command-line tool designed to revolutionize the way you develop and build extensions for MIT App Inventor 2 and its various distributions (Kodular, Niotron, etc.).
@@ -167,6 +172,10 @@ Got an issue, feature request, or just want to help build Bolt?
 - Donate on [Paypal](https://www.paypal.com/ncp/payment/UB4JGKR8YGYJE)
 - Donate on [BuyMeCoffie1](https://buymeacoffee.com/techhamara/membership)
 - Donate on [BuyMeCoffie2](https://buymeacoffee.com/techhamara)
+
+## Official Group 
+
+- Join [Telegram](https://t.me/boltcli) 
 
 ### ❤️ Thanks
 *Built with ❤️ for the MIT App Inventor Community.*
