@@ -1,0 +1,79 @@
+import 'dart:io';
+
+import 'package:checked_yaml/checked_yaml.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:bolt/src/services/logger.dart';
+import 'package:tint/tint.dart';
+
+part 'assets.dart';
+part 'build.dart';
+part 'version.dart';
+part 'old_config.g.dart';
+
+@JsonSerializable(
+  anyMap: true,
+  checked: true,
+  disallowUnrecognizedKeys: false,
+  includeIfNull: false,
+)
+class OldConfig {
+  String? name;
+
+  String? description;
+
+  Version? version;
+
+  Assets? assets;
+
+  Release? release;
+
+  Build? build;
+
+  List<String>? deps;
+
+  List<String>? authors;
+
+  String? author;
+
+  @JsonKey(defaultValue: null, name: 'license_url')
+  String? licenseUrl;
+
+  String? license;
+
+  @JsonKey(name: 'min_sdk')
+  int? minSdk;
+
+  String? homepage;
+
+  OldConfig({
+    this.name,
+    this.description,
+    this.version,
+    this.assets,
+    this.release,
+    this.build,
+    this.authors,
+    this.author,
+    this.deps,
+    this.license,
+    this.minSdk,
+    this.homepage,
+  });
+
+  // ignore: strict_raw_type
+  factory OldConfig._fromJson(Map json) => _$OldConfigFromJson(json);
+
+  static Future<OldConfig?> load(File configFile, Logger lgr) async {
+    lgr.dbg('Loading config from ${configFile.path}');
+    try {
+      return checkedYamlDecode(await configFile.readAsString(),
+          (json) => OldConfig._fromJson(json!));
+    } catch (e) {
+      lgr.err(e.toString());
+      lgr.log(
+          'Are you sure you are inside a Rush/Bolt project created prior to v2.0.0?',
+          'help  '.green());
+    }
+    return null;
+  }
+}

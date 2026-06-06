@@ -1,11 +1,10 @@
 ![Banner.png](https://github.com/user-attachments/assets/b354a91d-4290-4200-bb17-d06ff03f8d23)
 
-## Comming soon...
-
-![Comming.gif](https://github.com/user-attachments/assets/c33c2ab4-b19d-428a-bafe-260440e42a56)
-
-
 # ⚡ Bolt CLI
+
+[![Latest Version](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)](https://github.com/TechHamara/bolt-cli)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](#)
+[![MIT App Inventor](https://img.shields.io/badge/platform-App%20Inventor%202-orange.svg?style=for-the-badge)](https://github.com/mit-cml/appinventor-sources)
 
 **Bolt CLI** is a modern, high-performance command-line tool designed to revolutionize the way you develop and build extensions for MIT App Inventor 2 and its various distributions (Kodular, Niotron, etc.).
 
@@ -37,9 +36,8 @@ Bolt CLI brings modern Android and JVM build practices to App Inventor extension
 ## Demo
 
 <details><summary>here</summary>
-   
 ## Bolt CLI version:
-   
+
 <img width="968" height="797" alt="bolt-v" src="https://github.com/user-attachments/assets/d756a82a-8631-4d5e-9f3e-92fffd195c36" />
 
 ## Bolt Language Selection
@@ -61,7 +59,6 @@ Bolt CLI brings modern Android and JVM build practices to App Inventor extension
 ## Bolt Migrate With Build
 
 <img width="589" height="756" alt="migrate-demo-with-build" src="https://github.com/user-attachments/assets/6bcc1c93-d762-4f27-9ee6-514a9d5a5a13" />
-
 
 </details>
 
@@ -164,19 +161,15 @@ For comprehensive usage guidelines, configurations reference, and architectural 
 
 Got an issue, feature request, or just want to help build Bolt?
 
-- **Issues / Bug Reports**: [Open an Issue](https://github.com/TechHamara/bolt-cli/issues)
-- **Pull Requests**: We welcome PRs! Please fork the repository and create a pull request with your proposed changes.
+* **Issues / Bug Reports**: [Open an Issue](https://github.com/TechHamara/bolt-cli/issues)
+* **Pull Requests**: We welcome PRs! Please fork the repository and create a pull request with your proposed changes.
 
 ## 🤝 Donations & Support
 
-- Donate on [Paypal](https://www.paypal.com/ncp/payment/UB4JGKR8YGYJE)
-- Donate on [BuyMeCoffie1](https://buymeacoffee.com/techhamara/membership)
-- Donate on [BuyMeCoffie2](https://buymeacoffee.com/techhamara)
-
-## Official Group 
-
-- Join [Telegram](https://t.me/boltcli) 
+* Donate on [Paypal](https://www.paypal.com/ncp/payment/UB4JGKR8YGYJE)
+* Donate on [BuyMeCoffie1](https://buymeacoffee.com/techhamara/membership)
+* Donate on [BuyMeCoffie2](https://buymeacoffee.com/techhamara)
 
 ### ❤️ Thanks
-*Built with ❤️ for the MIT App Inventor Community.*
 
+*Built with ❤️ for the MIT App Inventor Community.*

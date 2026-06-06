@@ -1,0 +1,7 @@
+Analyzing maven_resolver...
+
+warning - example\maven_resolver_example.dart:23:8 - Duplicate import. Try removing all but one import of the library. - duplicate_import
+   info - example\maven_resolver_example.dart:23:8 - Can't use a relative path to import a library in 'lib'. Try fixing the relative path or changing the import to a 'package:' import. - avoid_relative_lib_imports
+   info - lib\src\version\version_item.dart:90:9 - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this.value') to initialize the field. - prefer_initializing_formals
+
+3 issues found.

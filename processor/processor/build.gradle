@@ -1,0 +1,66 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.9.20'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.20'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+version = '2.0.4'
+
+kotlin {
+    jvmToolchain(11)
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.google.auto.service:auto-service:1.0.1'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.20'
+
+    // CommonMark (Markdown)
+    implementation 'org.commonmark:commonmark:0.21.0'
+    implementation 'org.commonmark:commonmark-ext-autolink:0.21.0'
+    implementation 'org.commonmark:commonmark-ext-task-list-items:0.21.0'
+
+    implementation 'com.charleskorn.kaml:kaml-jvm:0.56.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.2'
+    implementation('org.json:json:20231013')
+
+    implementation project(':annotations')
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    minimize()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) { publication ->
+            project.shadow.component(publication)
+            artifact javadocJar
+            artifact sourcesJar
+            pom {
+                name = 'Bolt Annotation Processor'
+                description = 'Annotation processor for extensions built with Bolt.'
+
+                developers {
+                    developer {
+                        id = 'techhamara'
+                        name = 'Tech Hamara'
+                    }
+                }
+            }
+        }
+    }
+}
+
+signMavenJavaPublication {
+    dependsOn(jar)
+}
