@@ -43,35 +43,22 @@ info "Updating package lists and upgrading Termux resources..."
 pkg update -y && pkg upgrade -y
 
 # 2. Dependency checks
-info "Installing required dependencies (git, dart, openjdk-17, unzip, curl)..."
-pkg install -y git dart openjdk-17 unzip curl
+info "Installing required dependencies (openjdk-17, unzip, curl)..."
+pkg install -y openjdk-17 unzip curl
 
 BOLT_HOME="$HOME/.bolt"
 mkdir -p "$BOLT_HOME/bin"
 
-# 3. Clone and Build from Source
-info "Cloning Bolt CLI repository to build from source..."
-temp_dir=$(mktemp -d)
-git clone https://github.com/TechHamara/bolt-cli.git "$temp_dir"
-cd "$temp_dir"
+# 3. Download and Install Precompiled Binary
+info "Downloading Bolt CLI precompiled package for Termux..."
+zipUrl="https://github.com/TechHamara/bolt-cli/releases/latest/download/bolt-termux.zip"
+curl --location --progress-bar -o "$BOLT_HOME/bolt-termux.zip" "$zipUrl"
 
-info "Fetching Dart dependencies..."
-dart pub get
+info "Extracting Bolt CLI..."
+unzip -oq "$BOLT_HOME/bolt-termux.zip" -d "$BOLT_HOME"/
+rm "$BOLT_HOME/bolt-termux.zip"
 
-info "Generating build configurations..."
-dart run build_runner build --delete-conflicting-outputs
-
-info "Compiling Bolt CLI natively for your device architecture..."
-version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
-chmod +x scripts/build.sh
-./scripts/build.sh -v "$version"
-
-info "Installing compiled native binary to $BOLT_HOME/bin..."
-cp build/bin/bolt "$BOLT_HOME/bin/bolt"
 chmod +x "$BOLT_HOME/bin/bolt"
-
-cd "$HOME"
-rm -rf "$temp_dir"
 
 success "Installed Bolt CLI successfully at $BOLT_HOME/bin/bolt!"
 

@@ -58,19 +58,45 @@ jobs:
             dart compile exe -o build/bolt bin/bolt.dart
           fi
       - name: Upload executable
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           if-no-files-found: error
           name: bolt-${{ matrix.target }}
           path: build/*
 
-  create-release:
-    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
-    needs: [cli, annotation-processor]
+  termux-cli:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4.1.7
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Build executable inside Termux container
+        run: |
+          docker run --rm --platform linux/arm64 -v ${{ github.workspace }}:/workspace termux/termux-docker:aarch64 /entrypoint_root.sh /bin/bash -c "
+            set -e
+            pkg update -y
+            pkg install -y dart git
+            cd /workspace
+            rm -rf build/
+            dart pub get
+            dart run build_runner build --delete-conflicting-outputs
+            mkdir -p build
+            dart compile exe -o build/bolt bin/bolt.dart
+          "
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: bolt-aarch64-termux
+          path: build/*
+
+  create-release:
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    needs: [cli, termux-cli, annotation-processor]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
       - name: Download JAR dependencies
         run: |
           mkdir libs && cd libs
@@ -82,18 +108,24 @@ jobs:
       - name: Create platform archives
         run: |
           mkdir archives
-          for VAR in x86_64-linux x86_64-windows x86_64-apple-darwin
-          do
-            # Move the executable to bin dir
-            mkdir bolt-$VAR/bin && mv bolt-$VAR/bolt* bolt-$VAR/bin
-            # Copy JARs downloaded in prev step
-            cp libs/ bolt-$VAR -r
-            # Create ZIP
-            cd bolt-$VAR && zip ../archives/bolt-$VAR.zip . -r9
-            cd ..
-          done
+          
+          package_zip() {
+            local src_dir=$1
+            local dest_dir=$2
+            local zip_name=$3
+            
+            mkdir -p $dest_dir/bin
+            mv $src_dir/bolt* $dest_dir/bin/
+            cp libs/ $dest_dir -r
+            cd $dest_dir && zip ../archives/$zip_name.zip . -r9 && cd ..
+          }
+
+          package_zip bolt-x86_64-linux bolt-linux bolt-linux
+          package_zip bolt-x86_64-windows bolt-win bolt-win
+          package_zip bolt-x86_64-apple-darwin bolt-mac bolt-mac
+          package_zip bolt-aarch64-termux bolt-termux bolt-termux
       - name: Create a new draft release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: true
           fail_on_unmatched_files: true
