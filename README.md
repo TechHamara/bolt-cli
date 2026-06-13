@@ -84,7 +84,10 @@ iwr https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/i
 
 *The installer script respects the `BOLT_HOME` environment variable if set.*
 
-### Linux & macOS
+### Linux & macOS 
+
+<details><summary>
+(Current Not working 🚫)</summary>
 
 1. In the terminal, run the automated installation script:
 
@@ -101,6 +104,8 @@ Build and compile extensions directly on your phone! Run the automated Termux in
 ```bash
 curl https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/install-termux.sh -fsSL | bash
 ```
+
+</details>
 
 ---
 
@@ -151,9 +156,9 @@ Let's create a simple extension:
 
 For comprehensive usage guidelines, configurations reference, and architectural deep dives:
 
-* Refer to [DOCUMENTATION.md](file:///f:/FastFile/openSources/Rush-Bolt/rush-cli/DOCUMENTATION.md)
-* Read the full offline wiki guide: [WIKI.md](file:///f:/FastFile/openSources/Rush-Bolt/rush-cli/WIKI.md)
-* See how Bolt works under the hood: [how-to-work.md](file:///f:/FastFile/openSources/Rush-Bolt/rush-cli/how-to-work.md)
+* Refer to [DOCUMENTATION.md](https://github.com/TechHamara/bolt-cli/blob/main/DOCUMENTATION.md)
+* Read the full offline wiki guide: [WIKI.md](https://github.com/TechHamara/bolt-cli/wiki)
+* See how Bolt works under the hood: [how-to-work.md](https://github.com/TechHamara/bolt-cli/blob/main/how-to-work.md)
 
 ---
 

@@ -69,13 +69,13 @@ curl https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/
 
 #### Option B: Manual Setup 🛠️
 If you skipped the automated script or want to configure it yourself:
-1. Extract/download the latest `rush` packages and resources to `$HOME/.rush`.
+1. Extract/download the latest `bolt` packages and resources to `$HOME/.bolt`.
 2. Open your shell profile file (e.g. `.bashrc` or `.zshrc`) inside MT Manager's text editor.
 3. Paste the following configuration lines at the bottom of the file:
 
 ```bash
 # Bolt CLI Environment Configuration
-export BOLT_HOME="$HOME/.rush"
+export BOLT_HOME="$HOME/.bolt"
 export PATH="$PATH:$BOLT_HOME/bin"
 
 # Quick-launch wrapper function
@@ -98,7 +98,7 @@ Here is how the Bolt CLI environment organizes itself on your system. Understand
 $HOME/ (Termux Home / User Directory)
 ├── .bolt/                                <-- BOLT_HOME (Default Installation root)
 │   ├── bin/
-│   │   └── rush                          <-- Natively compiled executable (No JVM!)
+│   │   └── bolt                          <-- Natively compiled executable (No JVM!)
 │   └── libs/
 │       └── tools/
 │           ├── annotations.jar           <-- Extension annotations library
@@ -106,12 +106,12 @@ $HOME/ (Termux Home / User Directory)
 │           ├── android.jar               <-- Android Platform APIs reference
 │           └── ... (App Inventor Java compilation tools, approx. 170MB)
 │
-├── .bashrc (or .zshrc)                    <-- Shell settings with Rush environment variables
+├── .bashrc (or .zshrc)                    <-- Shell settings with bolt environment variables
 │
 └── storage/
     └── shared/                           <-- Symlink to your phone's internal storage
         └── Documents/
-            └── RushProjects/             <-- Recommended location for project folders
+            └── BoltProjects/             <-- Recommended location for project folders
 ```
 
 ---
@@ -122,7 +122,7 @@ Once the setup is complete, you can build an extension directly on your phone:
 
 ```bash
 # 1. Navigate to your projects directory (internal storage)
-cd ~/storage/shared/Documents/RushProjects
+cd ~/storage/shared/Documents/BoltProjects
 
 # 2. Scaffold a brand-new extension
 bolt create MyNewExtension
@@ -153,7 +153,7 @@ sudo apt-get install dart
 ```
 
 ### Build Commands
-Run these commands from the root directory of your cloned `rush-cli` repository:
+Run these commands from the root directory of your cloned `bolt-cli` repository:
 ```bash
 # 1. Fetch Dart dependencies
 dart pub get
@@ -173,16 +173,10 @@ This produces a self-contained executable at `build/bin/bolt` which has **zero e
 
 ## ❓ FAQ (Frequently Asked Questions)
 
-### **Q1: Why is there no `bolt.jar` like `fast-cli`'s `fast.jar`?**
-**A:** **This is a deliberate architectural advantage!** 
-* **`fast-cli`** is a Java/Kotlin program, which compiles to JVM bytecode and runs through `java -jar fast.jar`. This means every single command has to spin up the Java Virtual Machine, causing startup delays and using more CPU memory.
-* **`rush-cli`** is written in **Dart**, which compiles directly to native machine assembly language (native ELF/EXE binary).
-* Because of this, `rush` executes **instantly** (0ms startup latency) and compiles extensions significantly faster, with no JVM container wrapping. You do not need to prefix commands with `java -jar`; you run `rush` natively!
-
 ### **Q2: When running `bolt build`, I get an "Unsupported JRE" or "Java compiler not found" warning.**
 **A:** Ensure OpenJDK 17 is installed correctly on your system. Run `java -version` and `javac -version` in Termux. If it is missing, run `pkg install openjdk-17 -y`.
 
-### **Q3: I updated my `.bashrc` or `.zshrc` manually, but Termux says `command not found: rush`.**
+### **Q3: I updated my `.bashrc` or `.zshrc` manually, but Termux says `command not found: bolt`.**
 **A:** After modifying your profile files, the active shell session does not automatically know about the changes. You must reload it. Run:
 ```bash
 source ~/.bashrc
