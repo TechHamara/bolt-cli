@@ -141,7 +141,7 @@ Let's create a simple extension:
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `bolt build` | `-y, --sync`, `-o, --optimize`, `-b, --build-blocks`, `-m, --keep-manifest` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
+| `bolt build` | `-y, --sync`, `-o, --optimize`, `-m, --keep-manifest` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
 | `bolt clean` | *none* | Deletes compiler caches and build files for a clean environment. |
 | `bolt create` | *interactive* | Scaffolds a new project with IDE settings, sample templates, and configurations. |
 | `bolt sync` | `--dev-deps` | Resolves dependencies declared in `bolt.yml` and performs Support-to-AndroidX Jetifier translation when `jetify: true` is set. |
