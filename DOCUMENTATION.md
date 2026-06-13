@@ -120,7 +120,6 @@ bolt build
 |---|---|
 | `-y, --sync` | Forcefully triggers dependency synchronization before compiling the project. Default behavior bypasses sync for high performance. |
 | `-o, --optimize` | Shrink and optimize bytecode using ProGuard. Automatically triggered if runtime dependencies are present. |
-| `-b, --build-blocks` | Generate beautiful block mockups as PNG images inside the `out/` directory. |
 | `-m, --keep-manifest` | Preserve all classes declared in `AndroidManifest.xml` from ProGuard stripping. |
 
 Your generated `.aix` extension bundle will be available in the `out/` directory.
@@ -131,7 +130,7 @@ Your generated `.aix` extension bundle will be available in the `out/` directory
 
 | Command | Options | Description |
 |---|---|---|
-| `bolt build` | `-y`, `-o`, `-b`, `-m`, `-v` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
+| `bolt build` | `-y`, `-o`, `-r`, `-m`, `-v` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
 | `bolt clean` | *none* | Deletes compiler caches and build files for a clean environment. |
 | `bolt create` | *interactive* | Scaffolds a new project with IDE settings, CI pipelines, and configurations. |
 | `bolt sync` | `--dev-deps` | Resolves dependencies declared in `bolt.yml`. Performs automated Support-to-AndroidX Jetifier translation when `jetify: true` is configured. |
