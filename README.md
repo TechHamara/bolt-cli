@@ -33,9 +33,10 @@ Bolt CLI brings modern Android and JVM build practices to App Inventor extension
 
 ---
 
-## Demo
+## Demo Terminal 
 
 <details><summary>here</summary>
+
 ## Bolt CLI version:
 
 <img width="968" height="797" alt="bolt-v" src="https://github.com/user-attachments/assets/d756a82a-8631-4d5e-9f3e-92fffd195c36" />
@@ -57,8 +58,6 @@ Bolt CLI brings modern Android and JVM build practices to App Inventor extension
 <img width="731" height="510" alt="migrate-demo" src="https://github.com/user-attachments/assets/ba94a564-2210-4c45-a7f2-b41b074e3468" />
 
 ## Bolt Migrate With Build
-
-<img width="589" height="756" alt="migrate-demo-with-build" src="https://github.com/user-attachments/assets/6bcc1c93-d762-4f27-9ee6-514a9d5a5a13" />
 
 </details>
 
