@@ -12,7 +12,7 @@ Welcome to the official documentation for **Bolt** (v1.0.0). Bolt is a modern, h
 
 ## 🌟 Key Features
 
-Rush brings modern Android and JVM build practices to App Inventor extension development.
+Bolt brings modern Android and JVM build practices to App Inventor extension development.
 
 ### ⚡ Lightning-Fast Core
 
@@ -43,13 +43,13 @@ Rush brings modern Android and JVM build practices to App Inventor extension dev
 
 ### 🧩 App Inventor nb201 Compatibility
 
-* **Custom XML Bundling**: Fully supports `@UsesXmls` and `@XmlElement` annotations. Rush parses custom XML structures and bundles them with the final APK in the `dir/name:content` format expected by App Inventor nb201.
+* **Custom XML Bundling**: Fully supports `@UsesXmls` and `@XmlElement` annotations. Bolt parses custom XML structures and bundles them with the final APK in the `dir/name:content` format expected by App Inventor nb201.
 
 ---
 
 ## 🛠️ Installation & Setup
 
-Before installing Rush, ensure you have **JDK 8 or above** installed on your system.
+Before installing Bolt, ensure you have **JDK 8 or above** installed on your system.
 
 ### Windows (PowerShell)
 
@@ -100,7 +100,7 @@ Navigate to your working directory and use the `create` command to scaffold a ne
 bolt create MyAwesomeExtension
 ```
 
-Rush will guide you through:
+Bolt will guide you through:
 
 1. **Package name**: Your reverse-domain identifier (e.g., `com.example.myextension`).
 2. **Language**: Choose between Java or Kotlin (you can write in both simultaneously later).
@@ -120,7 +120,6 @@ bolt build
 |---|---|
 | `-y, --sync` | Forcefully triggers dependency synchronization before compiling the project. Default behavior bypasses sync for high performance. |
 | `-o, --optimize` | Shrink and optimize bytecode using ProGuard. Automatically triggered if runtime dependencies are present. |
-| `-b, --build-blocks` | Generate beautiful block mockups as PNG images inside the `out/` directory. |
 | `-m, --keep-manifest` | Preserve all classes declared in `AndroidManifest.xml` from ProGuard stripping. |
 
 Your generated `.aix` extension bundle will be available in the `out/` directory.
@@ -131,12 +130,12 @@ Your generated `.aix` extension bundle will be available in the `out/` directory
 
 | Command | Options | Description |
 |---|---|---|
-| `bolt build` | `-y`, `-o`, `-b`, `-m`, `-v` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
+| `bolt build` | `-y`, `-o`, `-r`, `-m`, `-v` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
 | `bolt clean` | *none* | Deletes compiler caches and build files for a clean environment. |
 | `bolt create` | *interactive* | Scaffolds a new project with IDE settings, CI pipelines, and configurations. |
 | `bolt sync` | `--dev-deps` | Resolves dependencies declared in `bolt.yml`. Performs automated Support-to-AndroidX Jetifier translation when `jetify: true` is configured. |
 | `bolt tree` | *none* | Renders a beautiful visual tree of the current project's hierarchical structure and automatically saves it as `tree.txt` in the project root. |
-| `bolt migrate` | *none* | Port legacy projects (Rush v1, `extension-template`, AI2 source, or `fast.yml` projects) to modern Bolt CLI architecture. Automatically zips the current project folder as a backup before migration. |
+| `bolt migrate` | *none* | Port legacy projects (Bolt v1, `extension-template`, AI2 source, or `fast.yml` projects) to modern Bolt CLI architecture. Automatically zips the current project folder as a backup before migration. |
 | `bolt upgrade` | `--force` | Upgrade the local Bolt CLI binary to the latest release on GitHub. |
 
 ### Global Options
@@ -206,7 +205,7 @@ kotlin_version: '1.8.0'
 
 ### Shorthand Class Names in `AndroidManifest.xml`
 
-Rush supports full manifest editing. Instead of writing verbose full-qualified class names, use the `.` or `...` prefix shorthands:
+Bolt supports full manifest editing. Instead of writing verbose full-qualified class names, use the `.` or `...` prefix shorthands:
 
 ```xml
 <manifest package="com.example.extension">
@@ -238,15 +237,15 @@ import com.google.appinventor.components.annotations.XmlElement;
 public class MyExtension extends AndroidNonvisibleComponent { ... }
 ```
 
-Rush parses and packages these xml parameters directly inside `component_build_infos.json` so they compile perfectly during final APK generation.
+Bolt parses and packages these xml parameters directly inside `component_build_infos.json` so they compile perfectly during final APK generation.
 
 ---
 
 ## ❓ FAQ (Frequently Asked Questions)
 
-### **Q: Do I need to uninstall ant or other build tools to use Rush?**
+### **Q: Do I need to uninstall ant or other build tools to use Bolt?**
 
-**A:** No. Rush runs completely independently and will not conflict with other development tools installed on your machine.
+**A:** No. Bolt runs completely independently and will not conflict with other development tools installed on your machine.
 
 ### **Q: Why am I getting "cannot find symbol" errors for UsesXmls/XmlElement?**
 
@@ -254,7 +253,7 @@ Rush parses and packages these xml parameters directly inside `component_build_i
 
 ### **Q: Can I use both Kotlin and Java in the same project?**
 
-**A:** Absolutely! You can place `.java` and `.kt` source files side-by-side inside your `src/` directory, and Rush will compile them together seamlessly.
+**A:** Absolutely! You can place `.java` and `.kt` source files side-by-side inside your `src/` directory, and Bolt will compile them together seamlessly.
 
 ### **Q:** Why was I getting "can't access jdk.internal.loader.ClassLoaders" or other illegal reflective access warnings when compiling Kotlin/kapt?
 
@@ -283,9 +282,9 @@ Rush parses and packages these xml parameters directly inside `component_build_i
 
 ### **Q:** My dependencies use `android.support.*` — how do I migrate to AndroidX?
 
-**A:** Simply add `jetify: true` to your `bolt.yml`. When running `rush sync`, Rush will automatically transform all legacy dependencies into their modern `androidx.*` counterparts.
+**A:** Simply add `jetify: true` to your `bolt.yml`. When running `bolt sync`, Bolt will automatically transform all legacy dependencies into their modern `androidx.*` counterparts.
 
-### **Q:** How do I build the Rush tool itself from source?**
+### **Q:** How do I build the Bolt tool itself from source?**
 
 **A:**
 
