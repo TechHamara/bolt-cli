@@ -33,9 +33,10 @@ Bolt CLI brings modern Android and JVM build practices to App Inventor extension
 
 ---
 
-## Demo
+## Demo Terminal 
 
 <details><summary>here</summary>
+
 ## Bolt CLI version:
 
 <img width="968" height="797" alt="bolt-v" src="https://github.com/user-attachments/assets/d756a82a-8631-4d5e-9f3e-92fffd195c36" />
@@ -56,9 +57,10 @@ Bolt CLI brings modern Android and JVM build practices to App Inventor extension
 
 <img width="731" height="510" alt="migrate-demo" src="https://github.com/user-attachments/assets/ba94a564-2210-4c45-a7f2-b41b074e3468" />
 
-## Bolt Migrate With Build
+## Bolt Build
 
-<img width="589" height="756" alt="migrate-demo-with-build" src="https://github.com/user-attachments/assets/6bcc1c93-d762-4f27-9ee6-514a9d5a5a13" />
+<img width="515" height="738" alt="bolt-build" src="https://github.com/user-attachments/assets/0cc04e94-276c-47d2-a02f-c2a48c941040" />
+
 
 </details>
 
@@ -84,7 +86,10 @@ iwr https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/i
 
 *The installer script respects the `BOLT_HOME` environment variable if set.*
 
-### Linux & macOS
+### Linux & macOS 
+
+<details><summary>
+(Current Not Support 🚫)</summary>
 
 1. In the terminal, run the automated installation script:
 
@@ -101,6 +106,12 @@ Build and compile extensions directly on your phone! Run the automated Termux in
 ```bash
 curl https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/install-termux.sh -fsSL | bash
 ```
+
+</details>
+
+### 🚀 Android Bolt Mobile IDE 
+
+[here](https://github.com/TechHamara/bolt-cli/wiki/Android-%E2%9A%A1Bolt-Mobile-IDE)
 
 ---
 
@@ -137,7 +148,7 @@ Let's create a simple extension:
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `bolt build` | `-y, --sync`, `-o, --optimize`, `-b, --build-blocks`, `-m, --keep-manifest` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
+| `bolt build` | `-y, --sync`, `-o, --optimize`, `-m, --keep-manifest` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
 | `bolt clean` | *none* | Deletes compiler caches and build files for a clean environment. |
 | `bolt create` | *interactive* | Scaffolds a new project with IDE settings, sample templates, and configurations. |
 | `bolt sync` | `--dev-deps` | Resolves dependencies declared in `bolt.yml` and performs Support-to-AndroidX Jetifier translation when `jetify: true` is set. |
@@ -151,9 +162,9 @@ Let's create a simple extension:
 
 For comprehensive usage guidelines, configurations reference, and architectural deep dives:
 
-* Refer to [DOCUMENTATION.md](file:///f:/FastFile/openSources/Rush-Bolt/rush-cli/DOCUMENTATION.md)
-* Read the full offline wiki guide: [WIKI.md](file:///f:/FastFile/openSources/Rush-Bolt/rush-cli/WIKI.md)
-* See how Bolt works under the hood: [how-to-work.md](file:///f:/FastFile/openSources/Rush-Bolt/rush-cli/how-to-work.md)
+* Refer to [DOCUMENTATION.md](https://github.com/TechHamara/bolt-cli/blob/main/DOCUMENTATION.md)
+* Read the full offline wiki guide: [WIKI.md](https://github.com/TechHamara/bolt-cli/wiki)
+* See how Bolt works under the hood: [how-to-work.md](https://github.com/TechHamara/bolt-cli/blob/main/how-to-work.md)
 
 ---
 
