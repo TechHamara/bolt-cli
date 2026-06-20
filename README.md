@@ -88,6 +88,8 @@ iwr https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/i
 
 ### Linux & macOS
 
+<details><summary>Current Not Support.</summary>
+
 1. In the terminal, run the automated installation script:
 
    ```bash
@@ -103,6 +105,11 @@ Build and compile extensions directly on your phone! Run the automated Termux in
 ```bash
 curl https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/install-termux.sh -fsSL | bash
 ```
+</details>
+
+### Android (Bolt Mobile IDE) Comming Soon..
+
+Check Documentation [here](https://github.com/TechHamara/bolt-cli/wiki/Android-%E2%9A%A1Bolt-Mobile-IDE)
 
 ---
 
