@@ -1177,7 +1177,7 @@ config enables it; use `-r` to force ProGuard on for this build.''',
           buffer.writeln('👤 **Author:** $author');
         }
         buffer.writeln(
-            '💻 **Built & documented using:** [Bolt CLI](https://github.com/TechHamara/bolt-cli)\n');
+            '💻 **Built & documented using:** [Bolt CLI](https://community.appinventor.mit.edu/t/os-bolt-cli-a-modern-lightning-fast-extension-compiler-with-java-kotlin-maven-universal-migration/174086?u=techhamara)\n');
 
         final events = compData['events'] as List? ?? [];
         if (events.isNotEmpty) {

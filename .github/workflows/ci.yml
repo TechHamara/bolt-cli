@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: zulu
-          java-version: 8
+          java-version: 17
       - uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 8.3
@@ -30,7 +30,7 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: x86_64-linux
-          - os: macos-12
+          - os: macos-13
             target: x86_64-apple-darwin
           - os: windows-2022
             target: x86_64-windows
@@ -72,7 +72,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Build executable inside Termux container
         run: |
-          docker run --rm --platform linux/arm64 -v ${{ github.workspace }}:/workspace termux/termux-docker:aarch64 /entrypoint_root.sh /bin/bash -c "
+          docker run --rm --platform linux/arm64 --security-opt seccomp:unconfined -v ${{ github.workspace }}:/workspace termux/termux-docker:aarch64 bash -c "
             set -e
             pkg update -y
             pkg install -y dart git
