@@ -22,7 +22,13 @@ jobs:
         working-directory: processor
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          ./gradlew build -x javadoc
+      - name: Upload processor artifact
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: annotation-processor
+          path: processor/build/libs/*.jar
 
   cli:
     strategy:
@@ -30,14 +36,14 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: x86_64-linux
-          - os: macos-13
+          - os: macos-11
             target: x86_64-apple-darwin
           - os: windows-2022
             target: x86_64-windows
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dart-lang/setup-dart@v1.5.1
+      - uses: dart-lang/setup-dart@v1
       - name: Install dependencies
         run: dart pub get
       - name: Verify formatting
@@ -51,18 +57,13 @@ jobs:
       - name: Build executable
         shell: bash
         run: |
-          mkdir build
-          if [ "$OS" = "Windows_NT" ]; then
-            dart compile exe -o build/bolt.exe bin/bolt.dart
-          else
-            dart compile exe -o build/bolt bin/bolt.dart
-          fi
+          bash ./scripts/build.sh
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
           if-no-files-found: error
           name: bolt-${{ matrix.target }}
-          path: build/*
+          path: build/bin/*
 
   termux-cli:
     runs-on: ubuntu-22.04
@@ -70,25 +71,29 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+      - uses: dart-lang/setup-dart@v1
+      - name: Fetch dependencies on host
+        run: |
+          export PUB_CACHE=${{ github.workspace }}/.pub-cache
+          dart pub get
       - name: Build executable inside Termux container
         run: |
-          docker run --rm --platform linux/arm64 --security-opt seccomp:unconfined -v ${{ github.workspace }}:/workspace termux/termux-docker:aarch64 bash -c "
+          docker run --rm --platform linux/arm64 --security-opt seccomp:unconfined -e PUB_CACHE=/workspace/.pub-cache -v ${{ github.workspace }}:/workspace termux/termux-docker:aarch64 bash -c "
             set -e
             pkg update -y
             pkg install -y dart git
             cd /workspace
             rm -rf build/
-            dart pub get
+            dart pub get --offline
             dart run build_runner build --delete-conflicting-outputs
-            mkdir -p build
-            dart compile exe -o build/bolt bin/bolt.dart
+            bash ./scripts/build.sh
           "
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
           if-no-files-found: error
           name: bolt-aarch64-termux
-          path: build/*
+          path: build/bin/*
 
   create-release:
     if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
@@ -105,6 +110,8 @@ jobs:
           wget https://dl.google.com/android/repository/platform-33_r02.zip && unzip platform-33_r02.zip 
           cp android-13/android.jar android-33.jar
           rm -r android-13 platform-33_r02.zip
+      - name: Copy built annotation processor
+        run: cp annotation-processor/*.jar libs/
       - name: Create platform archives
         run: |
           mkdir archives

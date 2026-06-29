@@ -63,14 +63,41 @@ else
   echo 'Please run `bolt deps sync --dev-deps` to download the necessary Java libraries.'
 fi
 
-case $SHELL in
-  /bin/zsh) shell_profile=".zshrc" ;;
-  *) shell_profile=".bash_profile" ;;
+shell_profile=".bashrc"
+case "$SHELL" in
+  */zsh) shell_profile=".zshrc" ;;
+  */bash)
+    if [ "$(uname -sm | grep -c Darwin)" -gt 0 ]; then
+      shell_profile=".bash_profile"
+    else
+      shell_profile=".bashrc"
+    fi
+    ;;
+  *)
+    if [ -f "$HOME/.zshrc" ]; then
+      shell_profile=".zshrc"
+    elif [ -f "$HOME/.bash_profile" ] && [ "$(uname -sm | grep -c Darwin)" -gt 0 ]; then
+      shell_profile=".bash_profile"
+    elif [ -f "$HOME/.bashrc" ]; then
+      shell_profile=".bashrc"
+    fi
+    ;;
 esac
 
-echo
-echo "Now, add the following to your \$HOME/$shell_profile (or similar):"
-echo "export PATH=\"\$PATH:$boltHome/bin\""
+touch "$HOME/$shell_profile"
+
+if ! grep -q "BOLT_HOME=" "$HOME/$shell_profile" 2>/dev/null; then
+  echo "" >> "$HOME/$shell_profile"
+  echo "# Bolt CLI Configuration" >> "$HOME/$shell_profile"
+  echo "export BOLT_HOME=\"$boltHome\"" >> "$HOME/$shell_profile"
+  echo "export PATH=\"\$PATH:\$BOLT_HOME/bin\"" >> "$HOME/$shell_profile"
+  echo
+  echo "Successfully updated your $shell_profile with BOLT_HOME and PATH."
+  echo "Please run:  source ~/$shell_profile  (or open a new terminal session)"
+else
+  echo
+  echo "Bolt CLI configuration already exists in $shell_profile. Skipping auto-injection."
+fi
 
 echo
 echo 'Run `bolt --help` to get started.'

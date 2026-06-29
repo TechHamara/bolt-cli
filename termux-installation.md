@@ -90,6 +90,43 @@ bolt() {
 
 ---
 
+## 📂 Environment Setup Paths (Linux, macOS, Termux)
+
+Bolt CLI scripts intelligently determine your target shell and operating system to automatically inject the environment variables (`BOLT_HOME` and `PATH`). 
+
+Here is the hierarchical flow of how the installation path and environment variables are set across platforms:
+
+```mermaid
+graph TD
+    A[Bolt CLI Setup Script] --> B{Is Custom Directory Provided?}
+    
+    B -- Yes --> C[Use Provided Path]
+    B -- No --> D{Is $BOLT_HOME set?}
+    
+    D -- Yes --> E[Use $BOLT_HOME]
+    D -- No --> F{Is Bolt already installed?}
+    
+    F -- Yes --> G[Use existing Bolt location]
+    F -- No --> H[Use Default Path: $HOME/.bolt]
+    
+    C --> L((Update Shell Profile))
+    E --> L
+    G --> L
+    H --> L
+    
+    L --> M{Detect OS / Shell}
+    
+    M -- Termux (Bash/Zsh) --> N[$HOME/.bashrc or $HOME/.zshrc]
+    M -- Linux (Bash/Zsh) --> O[$HOME/.bashrc or $HOME/.zshrc]
+    M -- macOS (Bash/Zsh) --> P[$HOME/.bash_profile or $HOME/.zshrc]
+    
+    N --> Q[Inject export BOLT_HOME & PATH]
+    O --> Q
+    P --> Q
+```
+
+---
+
 ## 📂 Visual Architecture: Workspace Graph Tree
 
 Here is how the Bolt CLI environment organizes itself on your system. Understanding this helps you manage libraries and packages effectively:
