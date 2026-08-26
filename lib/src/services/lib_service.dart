@@ -16,7 +16,7 @@ import 'package:tint/tint.dart';
 
 const boltApCoord =
     'io.github.techhamara.bolt:processor:$annotationProcVersion';
-const r8Coord = 'com.android.tools:r8:3.3.28';
+const r8Coord = 'com.android.tools:r8:8.3.37';
 // the coordinate for the ProGuard library.  version component can be
 // overridden by the user's configuration when necessary.
 const pgCoord = 'com.guardsquare:proguard-base:$defaultProguardVersion';
@@ -197,6 +197,7 @@ class LibService {
     bool includeAi2ProvidedDeps = false,
     bool includeProjectProvidedDeps = false,
     bool includeLocal = true,
+    bool includeTestDeps = false,
   }) async {
     // support the user temporarily disabling dependency evaluation by
     // adding a commented line like `#dependencies: false` to bolt.yml.  in
@@ -217,6 +218,14 @@ class LibService {
             allExtRemoteDeps.firstWhereOrNull((dep) => dep.coordinate == el))
         .nonNulls;
     final requiredDeps = _requiredDeps(allExtRemoteDeps, projectDeps);
+
+    final projectTestDeps = includeTestDeps
+        ? config.testDependencies
+            .map((el) =>
+                allExtRemoteDeps.firstWhereOrNull((dep) => dep.coordinate == el))
+            .nonNulls
+        : <Artifact>[];
+    final requiredTestDeps = _requiredDeps(allExtRemoteDeps, projectTestDeps);
 
     final projectProvidedDeps = config.providedDependencies
         .map((el) =>
@@ -243,6 +252,7 @@ class LibService {
 
     var resolvedArtifacts = [
       ...requiredDeps,
+      ...requiredTestDeps,
       if (includeLocal) ...localDeps,
       if (includeAi2ProvidedDeps) ...await providedDependencies(config),
       if (includeProjectProvidedDeps) ...requiredProjectProvidedDeps,
@@ -282,6 +292,36 @@ class LibService {
     return (await _findArtifact(buildLibsBox, boltApCoord)).classesJar;
   }
 
+  Future<String> strguardJar() async {
+    final fs = GetIt.I<FileService>();
+    final localStrGuard =
+        p.join(fs.boltHomeDir.path, 'libs', 'tools', 'strguard.jar');
+    if (File(localStrGuard).existsSync()) {
+      return localStrGuard;
+    }
+    throw Exception('StrGuard JAR not found at $localStrGuard');
+  }
+
+  Future<String> junitConsoleJar() async {
+    final fs = GetIt.I<FileService>();
+    final localJunit =
+        p.join(fs.boltHomeDir.path, 'libs', 'tools', 'junit-platform-console-standalone.jar');
+    if (File(localJunit).existsSync()) {
+      return localJunit;
+    }
+    throw Exception('JUnit Console JAR not found at $localJunit');
+  }
+
+  Future<String> jarjarJar() async {
+    final fs = GetIt.I<FileService>();
+    final localJarJar =
+        p.join(fs.boltHomeDir.path, 'libs', 'tools', 'jarjar.jar');
+    if (File(localJarJar).existsSync()) {
+      return localJarJar;
+    }
+    throw Exception('JarJar JAR not found at $localJarJar');
+  }
+
   Future<String> r8Jar() async {
     final fs = GetIt.I<FileService>();
     final localR8 =
@@ -290,6 +330,26 @@ class LibService {
       return localR8;
     }
     return (await _findArtifact(buildLibsBox, r8Coord)).classesJar;
+  }
+
+  Future<String> desugarJdkLibsJar() async {
+    final fs = GetIt.I<FileService>();
+    final localDesugarLibs =
+        p.join(fs.boltHomeDir.path, 'libs', 'tools', 'desugar_jdk_libs.jar');
+    if (File(localDesugarLibs).existsSync()) {
+      return localDesugarLibs;
+    }
+    throw Exception('desugar_jdk_libs.jar not found at $localDesugarLibs');
+  }
+
+  Future<String> desugarJdkLibsConfig() async {
+    final fs = GetIt.I<FileService>();
+    final localDesugarConfig =
+        p.join(fs.boltHomeDir.path, 'libs', 'tools', 'desugar_jdk_libs_configuration.json');
+    if (File(localDesugarConfig).existsSync()) {
+      return localDesugarConfig;
+    }
+    throw Exception('desugar_jdk_libs_configuration.json not found at $localDesugarConfig');
   }
 
   /// Returns the classpath jars for ProGuard.  If the caller passes a

@@ -5,6 +5,11 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:bolt/src/services/logger.dart';
 import 'package:bolt/src/utils/constants.dart';
 
+import 'package:bolt/src/config/strguard.dart';
+import 'package:bolt/src/config/relocation.dart';
+import 'package:bolt/src/config/minimize.dart';
+import 'package:bolt/src/config/ndk.dart';
+
 part 'android.dart';
 
 part 'kotlin.dart';
@@ -23,6 +28,9 @@ class Config {
 
   @JsonKey(disallowNullValue: true)
   final List<String> dependencies;
+
+  @JsonKey(name: 'test_dependencies', disallowNullValue: true)
+  final List<String> testDependencies;
 
   @JsonKey(name: 'provided_dependencies', disallowNullValue: true)
   final List<String> providedDependencies;
@@ -62,7 +70,7 @@ class Config {
 
   // version of proguard to download/use when the shrink task is executed. The
   // value defaults to whatever Rush itself ships with so that the template can
-  // interpolate the constant instead of hard‑coding it.
+  // interpolate the constant instead of hard-coding it.
   @JsonKey(name: 'proguard_version', disallowNullValue: true)
   final String proguardVersion;
 
@@ -77,6 +85,9 @@ class Config {
 
   @JsonKey(name: 'desugar_dex', disallowNullValue: true)
   final bool desugarDex;
+
+  @JsonKey(name: 'coreLibraryDesugaring', disallowNullValue: true)
+  final bool coreLibraryDesugaring;
 
   @JsonKey(name: 'compile_time', disallowNullValue: true)
   final List<String> compileTime;
@@ -108,6 +119,18 @@ class Config {
   @JsonKey(disallowNullValue: true)
   final bool jetify;
 
+  @JsonKey(disallowNullValue: true)
+  final StrGuardConfig? strguard;
+
+  @JsonKey(disallowNullValue: true)
+  final RelocationConfig? relocation;
+
+  @JsonKey(disallowNullValue: true)
+  final MinimizeConfig? minimize;
+  
+  @JsonKey(disallowNullValue: true)
+  final Ndk? ndk;
+
   Config({
     this.version,
     this.minSdk = 14,
@@ -117,10 +140,11 @@ class Config {
     this.assets = const [],
     this.authors = const [],
     this.dependencies = const [],
+    this.testDependencies = const [],
     this.providedDependencies = const [],
     this.repositories = const [],
     // callers may either supply a full Kotlin object or just the shorthand
-    // version alias – we resolve that below in the initializer list.
+    // version alias - we resolve that below in the initializer list.
     Kotlin? kotlin,
     this.kotlinVersionAlias,
     this.proguard = false,
@@ -129,6 +153,7 @@ class Config {
     this.desugarSources = false,
     this.desugarDeps = false,
     this.desugarDex = false,
+    this.coreLibraryDesugaring = false,
     this.compileTime = const [],
     this.excludes = const [],
     this.genDocs = false,
@@ -139,6 +164,10 @@ class Config {
     this.androidSdk = 33,
     this.java8 = false,
     this.jetify = false,
+    this.ndk,
+    this.strguard,
+    this.relocation,
+    this.minimize,
   }) : kotlin = kotlinVersionAlias != null
             ? Kotlin(compilerVersion: kotlinVersionAlias)
             : (kotlin ?? const Kotlin(compilerVersion: defaultKtVersion));

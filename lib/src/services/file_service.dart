@@ -43,12 +43,18 @@ class FileService {
   Directory get buildDir => p.join(dotBoltDir.path, 'build').asDir(true);
   Directory get buildClassesDir => p.join(buildDir.path, 'classes').asDir(true);
   Directory get buildRawDir => p.join(buildDir.path, 'raw').asDir(true);
+  Directory get buildJniDir => p.join(buildDir.path, 'jni').asDir(true);
+  Directory get cppDir => p.join(srcDir.path, 'cpp').asDir();
   Directory get buildFilesDir => p.join(buildDir.path, 'files').asDir(true);
   Directory get buildKaptDir => p.join(buildDir.path, 'kapt').asDir(true);
   Directory get buildAarsDir =>
       p.join(buildDir.path, 'extracted-aars').asDir(true);
 
   Directory get libsDir => p.join(boltHomeDir.path, 'libs').asDir();
+  Directory get aidlDir => p.join(libsDir.path, 'aidl').asDir();
+  
+  File get aidlExe => p.join(aidlDir.path, Platform.isWindows ? 'aidl.exe' : 'aidl').asFile();
+  File get frameworkAidl => p.join(aidlDir.path, 'framework.aidl').asFile();
 
   File get configFile {
     if (p.join(cwd, 'bolt.yml').asFile().existsSync()) {

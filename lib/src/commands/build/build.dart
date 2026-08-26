@@ -15,10 +15,12 @@ import 'package:bolt/src/commands/build/block_renderer.dart';
 import 'package:bolt/src/commands/build/utils.dart';
 import 'package:bolt/src/commands/deps/sync.dart';
 import 'package:bolt/src/commands/build/tools/compiler.dart';
+import 'package:bolt/src/commands/build/tools/ndk_compiler.dart';
 import 'package:bolt/src/commands/build/tools/executor.dart';
 import 'package:bolt/src/config/config.dart';
 import 'package:bolt/src/resolver/artifact.dart';
 import 'package:bolt/src/services/lib_service.dart';
+import 'package:bolt/src/services/daemon_service.dart';
 import 'package:bolt/src/services/file_service.dart';
 import 'package:bolt/src/services/logger.dart';
 import 'package:bolt/src/utils/constants.dart';
@@ -176,13 +178,8 @@ config enables it; use `-r` to force ProGuard on for this build.''',
     }
 
     if (config.autoVersion) {
-      _lgr.info('Auto-versioning enabled. Incrementing version numbers...',
+      _lgr.info('Auto-versioning enabled. Will increment version if compilation runs.',
           console: false);
-      try {
-        _incrementSourceVersions();
-      } catch (e) {
-        _lgr.warn('Failed to auto-increment version: $e');
-      }
     }
 
     // Check if user explicitly provided -r flag to enable ProGuard
@@ -447,10 +444,14 @@ config enables it; use `-r` to force ProGuard on for this build.''',
     }
 
     _lgr.info('Cleaning build caches');
-    _lgr.info('Increasing Components version');
+    _lgr.info('Increasing Components version', console: false);
+    final daemonService = DaemonService();
+    if (await daemonService.isRunning()) {
+      _lgr.info('Using warm Bolt Compiler Daemon', console: false);
+    }
     _lgr.startTask('Compiling Java classes');
+    final timestampBox = await Hive.openLazyBox<DateTime>(timestampBoxName);
     try {
-      final timestampBox = await Hive.openLazyBox<DateTime>(timestampBoxName);
       await _mergeManifests(
         config,
         timestampBox,
@@ -480,10 +481,10 @@ config enables it; use `-r` to force ProGuard on for this build.''',
 
     final String artJarPath;
     try {
-      _lgr.info('Copying extension assets');
+      _lgr.info('Copying extension assets', console: false);
       await BuildUtils.copyAssets(config);
       await BuildUtils.copyLicense(config);
-      _lgr.info('Generating AndroidRuntime.jar');
+      _lgr.info('Generating AndroidRuntime.jar', console: false);
       artJarPath = await _createArtJar(config);
     } catch (e, s) {
       _catchAndStop(e, s);
@@ -563,11 +564,11 @@ config enables it; use `-r` to force ProGuard on for this build.''',
     final runDex = requestedDex ?? config.desugarDex;
 
     // echo effective decisions so users know what actually happened
-    _lgr.info('Effective build options:');
-    _lgr.info('  shrink (proguard|R8): $shrink');
-    _lgr.info('    proguard flag: $runProguard');
-    _lgr.info('    R8 flag: $runR8');
-    _lgr.info('  dex generation: $runDex');
+    _lgr.info('Effective build options:', console: false);
+    _lgr.info('  shrink (proguard|R8): $shrink', console: false);
+    _lgr.info('    proguard flag: $runProguard', console: false);
+    _lgr.info('    R8 flag: $runR8', console: false);
+    _lgr.info('  dex generation: $runDex', console: false);
 
     // determine which shrinker to drive.  When the user explicitly asks for
     // ProGuard we honour that request even if R8 is also enabled; the
@@ -651,7 +652,7 @@ config enables it; use `-r` to force ProGuard on for this build.''',
           return 1;
         }
       } else if (runR8) {
-        _lgr.info('R8 enabled; ProGuard step skipped.');
+        _lgr.info('R8 enabled; ProGuard step skipped.', console: false);
       }
       _lgr.stopTask();
     }
@@ -659,7 +660,7 @@ config enables it; use `-r` to force ProGuard on for this build.''',
     if (runDex) {
       _lgr.startTask('Generating DEX bytecode');
       try {
-        await Executor.execD8(config, artJarPath);
+        await Executor.execD8(config, artJarPath, timestampBox);
       } catch (e, s) {
         _catchAndStop(e, s);
         return 1;
@@ -876,7 +877,7 @@ config enables it; use `-r` to force ProGuard on for this build.''',
 
     if (mainManifest.existsSync()) {
       _lgr.dbg('AndroidManifest.xml is found at: ${mainManifest.path}');
-      _lgr.info('Reading AndroidManifest.xml');
+      _lgr.info('Reading AndroidManifest.xml', console: false);
       var content = await mainManifest.readAsString();
       final packageMatch = RegExp('package="([^"]+)"').firstMatch(content);
       if (packageMatch != null) {
@@ -927,11 +928,17 @@ config enables it; use `-r` to force ProGuard on for this build.''',
       Config config, LazyBox<DateTime> timestampBox, bool buildBlocks) async {
     final srcFiles =
         _fs.srcDir.path.asDir().listSync(recursive: true).whereType<File>();
-    final javaFiles = srcFiles
+    var javaFiles = srcFiles
         .whereType<File>()
         .where((file) => p.extension(file.path) == '.java')
         .map((f) => f.path)
         .toSet();
+        
+    final aidlGeneratedFiles = await Compiler.compileAidlFiles(timestampBox);
+    if (aidlGeneratedFiles.isNotEmpty) {
+      javaFiles.addAll(aidlGeneratedFiles);
+    }
+
     final ktFiles = srcFiles
         .whereType<File>()
         .where((file) => p.extension(file.path) == '.kt');
@@ -1016,9 +1023,26 @@ config enables it; use `-r` to force ProGuard on for this build.''',
     }
 
     try {
+      final onBeforeCompile = () {
+        if (config.autoVersion) {
+          _lgr.info('Incrementing version numbers...', console: false);
+          try {
+            _incrementSourceVersions();
+          } catch (e) {
+            _lgr.warn('Failed to auto-increment version: $e');
+          }
+        }
+      };
+
       if (ktFiles.isNotEmpty) {
-        await Compiler.compileKtFiles(compileClasspathJars,
-            config.kotlin.compilerVersion, timestampBox, config, buildBlocks);
+        await Compiler.compileKtFiles(
+          compileClasspathJars,
+          config.kotlin.compilerVersion,
+          timestampBox,
+          config,
+          buildBlocks,
+          onBeforeCompile: onBeforeCompile,
+        );
       }
 
       if (javaFiles.isNotEmpty) {
@@ -1027,8 +1051,10 @@ config enables it; use `-r` to force ProGuard on for this build.''',
         // directory contents changed mid-build.
         await Compiler.compileJavaFiles(compileClasspathJars, supportJava8,
             timestampBox, config, buildBlocks,
-            javaFiles: javaFiles);
+            javaFiles: javaFiles, onBeforeCompile: onBeforeCompile);
       }
+
+      await NdkCompiler.compileNativeCode(config);
     } catch (e, s) {
       _lgr
         ..dbg(e.toString())
@@ -1141,6 +1167,16 @@ config enables it; use `-r` to force ProGuard on for this build.''',
           await zipEncoder.addFile(file, p.join(await org, name));
         }
       }
+
+      if (_fs.buildJniDir.existsSync()) {
+        for (final file in _fs.buildJniDir.listSync(recursive: true)) {
+          if (file is File) {
+            final name = p.relative(file.path, from: _fs.buildJniDir.path);
+            await zipEncoder.addFile(file, p.join('jni', name).replaceAll(r'\', '/'));
+          }
+        }
+      }
+      
       // Generate Documentation
       _lgr.dbg('Generating docs for extension');
       _lgr.dbg('Writing docs for single component extension.');

@@ -2,17 +2,32 @@
 
 **The Ultimate Extension Builder for MIT App Inventor 2**
 
-[![Latest Version](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)](https://github.com/TechHamara/bolt-cli)
+[![Latest Version](https://img.shields.io/badge/version-1.1.0-blue.svg?style=for-the-badge)](https://github.com/TechHamara/bolt-cli)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](#)
 [![MIT App Inventor](https://img.shields.io/badge/platform-App%20Inventor%20nb201-orange.svg?style=for-the-badge)](https://github.com/mit-cml/appinventor-sources)
 
-Welcome to the official documentation for **Bolt** (v1.0.0). Bolt is a modern, high-performance, and feature-rich command-line tool designed to revolutionize the way you develop and build extensions for MIT App Inventor 2 and its various distributions (Kodular, Niotron, etc.).
+Welcome to the official documentation for **Bolt** (v1.1.0). Bolt is a modern, high-performance, and feature-rich command-line tool designed to revolutionize the way you develop and build extensions for MIT App Inventor 2 and its various distributions (Kodular, Niotron, etc.).
 
 ---
 
 ## 🌟 Key Features
 
 Bolt brings modern Android and JVM build practices to App Inventor extension development.
+
+### 🔥 NEW! Advanced Features (v1.1.0)
+* **Bolt Compiler Daemon (`bolt daemon start/stop/status`)**: Keeps `javac`, `kotlinc`, and `D8` warmed up in RAM, eliminating JVM cold-start penalties and delivering **sub-second to 3s builds**.
+* **Incremental D8 Bytecode Caching**: Automatically skips D8 DEX generation when bytecode has not changed, bringing incremental build times down to **~3 seconds**.
+* **`bolt sync dev` Command**: Automatically downloads and updates `desugar_jdk_libs:2.1.5` and configuration files from Google Maven.
+* **Auto AIDL Compilation**: Auto-detects `.aidl` interface files in `src/` and compiles them into Java without requiring `aidl: true` in `bolt.yml`.
+* **Live Hot-Reloading (`bolt run`) & `BoltHotReloader.aix` Extension**: Push Java changes directly to your device via WebSocket in less than a second! We built a custom `.aix` extension that you drop into your App Inventor project.
+  * **WebSocket Receiver**: Uses `Java-WebSocket` to connect directly to the Bolt CLI server.
+  * **Dynamic DEX Swapping**: When it receives a new `.dex` binary payload, it saves it to cache, uses Java Reflection to clear the Companion's `loadedExternalDexs` list, and hot-swaps a new `DexClassLoader` at runtime!
+* **Automated Licensing (`bolt auth`)**: Offline RSA-2048 licensing, automatically locking to the customer's App Inventor email.
+* **Mini-NDK Support**: Build C/C++ extensions out-of-the-box without requiring the full Android Studio NDK.
+* **Dependency Manager (`bolt add`)**: Easily add Maven dependencies to your project with a single command (e.g. `bolt add com.squareup.okhttp3:okhttp:4.12.0`).
+* **Unit Testing Support (`bolt test`)**: Write and execute standard JUnit 5 tests, powered by **Robolectric**, to test your extension logic locally without a device!
+* **Next-Gen Desugaring**: The advanced `desugar` feature is now fully compatible with **JDK 8 up to JDK 25+**!
+* **coreLibraryDesugaring**: Seamlessly use modern Java 8+ APIs like `java.time.*` and `java.util.stream.*` even on older Android devices.
 
 ### ⚡ Lightning-Fast Core
 
@@ -133,6 +148,8 @@ Your generated `.aix` extension bundle will be available in the `out/` directory
 | `bolt build` | `-y`, `-o`, `-r`, `-m`, `-v` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
 | `bolt clean` | *none* | Deletes compiler caches and build files for a clean environment. |
 | `bolt create` | *interactive* | Scaffolds a new project with IDE settings, CI pipelines, and configurations. |
+| `bolt test` | *none* | Compiles and executes JUnit 5 tests located in the `test/` directory using JUnit Console Launcher. |
+| `bolt run` | `-p`, `--port` | Starts a live hot-reload server with UDP auto-discovery to push compiled code directly to the Bolt Companion app over Wi-Fi. |
 | `bolt sync` | `--dev-deps` | Resolves dependencies declared in `bolt.yml`. Performs automated Support-to-AndroidX Jetifier translation when `jetify: true` is configured. |
 | `bolt tree` | *none* | Renders a beautiful visual tree of the current project's hierarchical structure and automatically saves it as `tree.txt` in the project root. |
 | `bolt migrate` | *none* | Port legacy projects (Bolt v1, `extension-template`, AI2 source, or `fast.yml` projects) to modern Bolt CLI architecture. Automatically zips the current project folder as a backup before migration. |
@@ -164,8 +181,21 @@ min_sdk: 14
 # Target Android compile SDK API level
 compile_sdk: 35
 
-# Enable Java 8 desugaring (for lambdas, stream APIs, etc.)
+# Enable Java 8+ desugaring natively via D8 (for lambdas, streams, etc.)
 desugar: true
+
+# Enable Core Library Desugaring (modern Java APIs like java.time.* on older devices)
+coreLibraryDesugaring: true
+
+# Repackage/Shade dependencies automatically using JarJar
+relocation:
+  EnableAutoRelocation: true
+  skipStringContants: true
+
+# Exclude specific dependencies from ProGuard minimization to prevent reflection errors
+minimize:
+  exclude_dependency:
+    - org.slf4j:slf4j-simple:.*
 
 # Enable ProGuard optimization/shrinking (defaults to off)
 proguard: true
@@ -194,6 +224,10 @@ provided_dependencies:
 # Assets to bundle with your extension
 assets:
   - icon.png
+
+# Native C/C++ (JNI & NDK) Support
+# ndk:
+#   enabled: true
 
 # Kotlin setup (both syntax forms are supported)
 kotlin_version: '1.8.0'

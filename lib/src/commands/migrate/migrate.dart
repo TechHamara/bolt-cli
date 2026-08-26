@@ -10,6 +10,9 @@ import 'package:tint/tint.dart';
 import 'package:bolt/src/commands/deps/sync.dart';
 import 'package:bolt/src/commands/migrate/old_config/old_config.dart' as old;
 import 'package:bolt/src/config/config.dart';
+import 'package:bolt/src/config/ndk.dart';
+import 'package:bolt/src/config/strguard.dart';
+import 'package:bolt/src/config/relocation.dart';
 import 'package:bolt/src/services/file_service.dart';
 import 'package:bolt/src/services/logger.dart';
 import 'package:bolt/src/utils/constants.dart';
@@ -113,9 +116,11 @@ class MigrateCommand extends Command<int> {
       proguard: false,
       deannonate: true,
       autoVersion: true,
+      ndk: Ndk(),
     );
     _lgr.stopTask();
 
+    String? extractedPackageName;
     final candidateNames = <String>{resolvedName};
 
     // Heuristic 1: Strip non-alphanumeric and compare (e.g. 'pop-menu' -> 'popmenu')
@@ -158,6 +163,7 @@ class MigrateCommand extends Command<int> {
         final match = RegExp(r'package="([^"]+)"').firstMatch(content);
         if (match != null) {
           final pkg = match.group(1)!;
+          extractedPackageName ??= pkg;
           final lastPart = pkg.split('.').last;
           candidateNames.add(lastPart);
           final uCamel = lastPart[0].toUpperCase() + lastPart.substring(1);
@@ -175,6 +181,7 @@ class MigrateCommand extends Command<int> {
             .firstMatch(content);
         if (match != null) {
           final pkg = match.group(1)!;
+          extractedPackageName ??= pkg;
           final lastPart = pkg.split('.').last;
           candidateNames.add(lastPart);
           final uCamel = lastPart[0].toUpperCase() + lastPart.substring(1);
@@ -206,10 +213,30 @@ class MigrateCommand extends Command<int> {
       return 1;
     }
 
+    if (extractedPackageName == null) {
+      try {
+        final content = srcFile.readAsStringSync();
+        final pkgMatch =
+            RegExp(r'package\s+([a-zA-Z0-9_.]+);').firstMatch(content);
+        if (pkgMatch != null) {
+          extractedPackageName = pkgMatch.group(1);
+        } else if (p.isWithin(_fs.srcDir.path, srcFile.path)) {
+          final relDir = p.relative(srcFile.parent.path, from: _fs.srcDir.path);
+          if (relDir != '.' && relDir.isNotEmpty) {
+            extractedPackageName = relDir.replaceAll(p.separator, '.');
+          }
+        }
+      } catch (_) {}
+    }
+
     _editSourceFile(srcFile, oldConfig);
 
     _lgr.startTask('Updating config file (bolt.yml)');
-    _updateConfig(newConfig, oldConfig.build?.kotlin?.enable ?? false);
+    _updateConfig(
+      newConfig,
+      oldConfig.build?.kotlin?.enable ?? false,
+      orgName: extractedPackageName,
+    );
     _deleteOldHiveBoxes();
     _lgr.stopTask();
 
@@ -345,7 +372,7 @@ class MigrateCommand extends Command<int> {
     }
   }
 
-  void _updateConfig(Config config, bool enableKotlin) {
+  void _updateConfig(Config config, bool enableKotlin, {String? orgName}) {
     final authorLine =
         config.author.isNotEmpty ? "\nauthor: '${config.author}'\n" : '';
 
@@ -493,6 +520,32 @@ license: ${config.license}
 
 # Enable to increment the version number of each component during build.
 auto_version: ${config.autoVersion}
+
+# Bytecode-level string obfuscation tool, to protect hardcoded strings.
+strguard:
+  enabled: false
+  key: "TechHamara-MyKey-2026-Secret"
+  packages:
+    - "${(orgName != null && orgName.isNotEmpty) ? orgName : 'com.example'}"
+
+# Implement Package Relocation (Shading).
+relocation:
+  EnableAutoRelocation: true
+  skipStringContants: true
+  # include:
+  #   - org.apache.hadoop.**
+  # exclude:
+  #   - org.apache.hadoop.**
+
+# Minimization Exclusions explicitly exclude dependencies that use reflection/dynamic loading from being minimized.
+# minimize:
+#   exclude_dependency: 
+#    - org.slf4j:slf4j-simple:.*
+#   exclude_project:
+#    - :api
+
+# Enable modern Java API support on older devices default
+coreLibraryDesugaring: false
 ''';
 
     _fs.configFile.writeAsStringSync(contents);
@@ -545,6 +598,19 @@ auto_version: ${config.autoVersion}
       }
     }
 
+    String? extractedPackageName;
+    for (final file in javaFiles) {
+      try {
+        final content = file.readAsStringSync();
+        final pkgMatch =
+            RegExp(r'package\s+([a-zA-Z0-9_.]+);').firstMatch(content);
+        if (pkgMatch != null) {
+          extractedPackageName = pkgMatch.group(1);
+          break;
+        }
+      } catch (_) {}
+    }
+
     final newConfig = Config(
       version: '1.0.0',
       assets: [],
@@ -553,10 +619,12 @@ auto_version: ${config.autoVersion}
       kotlin: Kotlin(
         compilerVersion: defaultKtVersion,
       ),
+      deannonate: true,
+      ndk: Ndk(),
     );
 
     _lgr.startTask('Updating config file (bolt.yml)');
-    _updateConfig(newConfig, false);
+    _updateConfig(newConfig, false, orgName: extractedPackageName);
     _lgr.stopTask();
 
     // Copy src files if they are in appinventor

@@ -1,7 +1,7 @@
 import 'package:bolt/src/services/lib_service.dart';
 import 'package:bolt/src/utils/constants.dart';
 
-String config(bool enableKt, [String? author]) {
+String config(bool enableKt, String orgName, [String? author]) {
   final authorLine =
       author != null && author.isNotEmpty ? "\nauthor: '$author'\n" : '';
   return '''
@@ -80,6 +80,37 @@ ${enableKt ? '#- $kotlinGroupId:kotlin-stdlib:$defaultKtVersion\n' : ''}#- examp
 
 # Enable to increment the version number of each component during build.
 auto_version: true
+
+# Bytecode-level string obfuscation tool, to protect hardcoded strings.
+strguard:
+  enabled: false
+  key: "TechHamara-MyKey-2026-Secret"
+  packages:
+    - "$orgName"
+
+# Implement Package Relocation (Shading).
+relocation:
+  EnableAutoRelocation: true
+  skipStringContants: true
+  # include:
+  #   - org.apache.hadoop.**
+  # exclude:
+  #   - org.apache.hadoop.**
+
+# Minimization Exclusions explicitly exclude dependencies that use reflection/dynamic loading from being minimized.
+# minimize:
+#   exclude_dependency: 
+#    - org.slf4j:slf4j-simple:.*
+#   exclude_project:
+#    - :api
+
+# Enable modern Java API support on older devices default
+coreLibraryDesugaring: false
+
+# Native C/C++ (JNI & NDK) Support
+# ndk:
+#   enabled: true
+
 ''';
 }
 

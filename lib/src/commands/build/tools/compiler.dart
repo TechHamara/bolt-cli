@@ -226,6 +226,80 @@ class Compiler {
     }
   }
 
+  /// Compile AIDL source files to Java source files.
+  /// 
+  /// Scans the `src` directory for `.aidl` files. If any are found, executes
+  /// `aidl.exe` to generate `.java` files in the `.bolt/build/generated/aidl` directory.
+  /// Returns the set of generated `.java` file paths.
+  static Future<Set<String>> compileAidlFiles(LazyBox<DateTime> timestampBox) async {
+    final aidlFiles = _fs.srcDir
+        .listSync(recursive: true)
+        .where((el) => el is File && p.extension(el.path) == '.aidl')
+        .map((el) => el.path)
+        .toSet();
+
+    if (aidlFiles.isEmpty) return {};
+
+    final outDir = p.join(_fs.buildDir.path, 'generated', 'aidl').asDir(true);
+
+    final lastCompile = await timestampBox.get('aidlCompileTimestampKey');
+    bool needsCompile = lastCompile == null || !outDir.existsSync();
+    
+    if (!needsCompile) {
+      for (final filePath in aidlFiles) {
+        if ((await File(filePath).lastModified()).isAfter(lastCompile!)) {
+          needsCompile = true;
+          break;
+        }
+      }
+    }
+
+    if (!needsCompile) {
+      _lgr.info('Skipping AIDL compilation', console: false);
+      // Just return the already generated files
+      return outDir
+          .listSync(recursive: true)
+          .where((el) => el is File && p.extension(el.path) == '.java')
+          .map((el) => el.path).toSet();
+    }
+
+    _lgr.info('Compiling ${aidlFiles.length} AIDL file${aidlFiles.length > 1 ? 's' : ''}');
+
+    if (!_fs.aidlExe.existsSync() || !_fs.frameworkAidl.existsSync()) {
+      throw Exception('AIDL compiler or framework.aidl not found in ${_fs.aidlDir.path}. Please run `bolt install aidl` or ensure the libs exist.');
+    }
+
+    final generatedJavaFiles = <String>{};
+
+    for (final aidlFile in aidlFiles) {
+      final args = [
+        '-I${_fs.srcDir.path}',
+        '-p${_fs.frameworkAidl.path}',
+        '-o${outDir.path}',
+        aidlFile,
+      ];
+
+      try {
+        await _processRunner.runExecutable(_fs.aidlExe.path, args);
+      } catch (e) {
+        throw Exception('Failed to compile AIDL file $aidlFile: $e');
+      }
+
+      // Calculate expected output java file path
+      // aidl output matches the package name defined in the aidl file
+      // A quick and dirty way is to just list all java files in outDir after run
+    }
+
+    // Collect all generated java files
+    generatedJavaFiles.addAll(outDir
+        .listSync(recursive: true)
+        .where((el) => el is File && p.extension(el.path) == '.java')
+        .map((el) => el.path));
+
+    await timestampBox.put('aidlCompileTimestampKey', DateTime.now());
+    return generatedJavaFiles;
+  }
+
   /// Compile a set of Java source files.
   ///
   /// If [javaFiles] is provided we use it directly; otherwise we perform a
@@ -239,6 +313,7 @@ class Compiler {
     Config config,
     bool buildBlocks, {
     Set<String>? javaFiles,
+    void Function()? onBeforeCompile,
   }) async {
     javaFiles ??= _fs.srcDir
         .listSync(recursive: true)
@@ -246,9 +321,30 @@ class Compiler {
         .map((el) => el.path)
         .toSet();
 
-    // log the amount we are about to compile; callers already print a summary
-    // but the compiler itself can also help later when debugging.
     final fileCount = javaFiles.length;
+    
+    final lastCompile = await timestampBox.get('javaCompileTimestampKey');
+    bool needsCompile = lastCompile == null || !_fs.buildClassesDir.existsSync();
+    
+    if (!needsCompile) {
+      for (final filePath in javaFiles) {
+        final modTime = await File(filePath).lastModified();
+        if (modTime.isAfter(lastCompile!)) {
+          needsCompile = true;
+          break;
+        }
+      }
+    }
+
+    if (!needsCompile) {
+      _lgr.info('Skipping Java compilation (no changes detected)', console: false);
+      return;
+    }
+
+    if (onBeforeCompile != null) {
+      onBeforeCompile();
+    }
+
     if (fileCount > 0) {
       _lgr.info('Compiling $fileCount Java file${fileCount > 1 ? 's' : ''}');
     }
@@ -271,6 +367,8 @@ class Compiler {
     } catch (e) {
       rethrow;
     }
+    
+    await timestampBox.put('javaCompileTimestampKey', DateTime.now());
     await _cleanUpOldClassFiles(compilationStartedOn);
   }
 
@@ -332,14 +430,39 @@ class Compiler {
     String kotlinVersion,
     LazyBox<DateTime> timestampBox,
     Config config,
-    bool buildBlocks,
-  ) async {
+    bool buildBlocks, {
+    void Function()? onBeforeCompile,
+  }) async {
     final DateTime compilationStartedOn;
     try {
       final ktFiles = _fs.srcDir
           .listSync(recursive: true)
           .where((el) => el is File && p.extension(el.path) == '.kt')
           .toList();
+
+      if (ktFiles.isEmpty) return;
+
+      final lastCompile = await timestampBox.get('ktCompileTimestampKey');
+      bool needsCompile = lastCompile == null || !_fs.buildClassesDir.existsSync();
+
+      if (!needsCompile) {
+        for (final file in ktFiles) {
+          if ((file as File).lastModifiedSync().isAfter(lastCompile!)) {
+            needsCompile = true;
+            break;
+          }
+        }
+      }
+
+      if (!needsCompile) {
+        _lgr.info('Skipping Kotlin compilation (no changes detected)', console: false);
+        return;
+      }
+
+      if (onBeforeCompile != null) {
+        onBeforeCompile();
+      }
+
       _lgr.dbg('Compiling kotlin classes.');
       _lgr.dbg('Found ${ktFiles.length} sources.');
 
@@ -352,6 +475,7 @@ class Compiler {
       _lgr.dbg('Calling kotlinc commands.');
       await _processRunner.runExecutable(BuildUtils.javaExe(), kotlincArgs);
       _lgr.dbg('kotlinc is successfully executed.');
+      await timestampBox.put('ktCompileTimestampKey', DateTime.now());
     } catch (e) {
       rethrow;
     }

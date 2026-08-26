@@ -142,7 +142,7 @@ ${'Success!'.green()} Generated a new extension project in ${p.relative(projectD
       p.join(projectDir, 'src', 'AndroidManifest.xml'):
           androidManifestXml(orgName),
       p.join(projectDir, 'src', 'proguard-rules.pro'): pgRules(orgName),
-      p.join(projectDir, 'bolt.yml'): config(lang == 'Kotlin', author),
+      p.join(projectDir, 'bolt.yml'): config(lang == 'Kotlin', orgName, author),
       p.join(projectDir, 'README.md'): readmeMd(pascalCasedName),
       p.join(projectDir, '.gitignore'): dotGitignore,
       p.join(projectDir, 'deps', '.placeholder'):

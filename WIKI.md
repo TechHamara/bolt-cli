@@ -222,3 +222,23 @@ Whenever the `bolt migrate` command is executed, Bolt CLI performs an automated 
 * `bolt migrate fast`: Upgrades a legacy Fast CLI project, converting `fast.yml` to `bolt.yml`.
 * `bolt migrate template`: Converts a traditional App Inventor `extension-template` directory setup into a clean Bolt project, restructuring the `src/` layout.
 * `bolt migrate ai2`: Converts raw App Inventor components sources into a modular Bolt CLI extension project.
+
+---
+
+## 8. Complete CLI Command Reference
+
+| Command | Description |
+|---|---|
+| `bolt build` | Builds the extension project, generating `.aix` in `out/`. |
+| `bolt clean` | Deletes old build artifacts, temporary cache files, and intermediate DEX outputs. |
+| `bolt create <name>` | Scaffolds a new Java/Kotlin extension project interactively. |
+| `bolt daemon <start/stop/status>` | Manages the persistent background compiler daemon on port 19090 for **sub-4s builds**. |
+| `bolt sync` / `bolt sync dev` | Syncs project dependencies; `sync dev` downloads & updates `desugar_jdk_libs:2.1.5` and configuration files from Maven. |
+| `bolt add <coordinate>` | Automatically searches Maven Central, resolves dependencies, and adds them to `bolt.yml`. |
+| `bolt run` | Starts a live testing session with hot-reloading to an Android device over WebSocket. |
+| `bolt auth` | Manages offline RSA-2048 licensing for premium extensions. |
+| `bolt test` | Executes local JUnit 5 / Robolectric unit tests without needing an emulator. |
+| `bolt tree` | Displays visual file directory structure and saves it to `tree.txt`. |
+| `bolt migrate <type>` | Safely migrates legacy projects (`rush`, `fast`, `template`, `ai2`) with automatic zip backup. |
+| `bolt upgrade` | Upgrades Bolt CLI to the latest version. |
+

@@ -13,6 +13,11 @@ import 'package:bolt/src/commands/deps/sync.dart';
 import 'package:bolt/src/commands/deps/tree.dart';
 import 'package:bolt/src/commands/migrate/migrate.dart';
 import 'package:bolt/src/commands/upgrade/upgrade.dart';
+import 'package:bolt/src/commands/test/test.dart';
+import 'package:bolt/src/commands/add.dart';
+import 'package:bolt/src/commands/run/run.dart';
+import 'package:bolt/src/commands/daemon.dart';
+import 'package:bolt/src/commands/auth/auth.dart';
 import 'package:bolt/src/services/logger.dart';
 import 'package:bolt/src/version.dart';
 import 'package:bolt/version.dart' show boltBuiltOn;
@@ -79,7 +84,12 @@ class BoltCommandRunner extends CommandRunner<int> {
     addCommand(SyncCommand());
     addCommand(TreeCommand());
     addCommand(MigrateCommand());
+    addCommand(DaemonCommand());
     addCommand(UpgradeCommand());
+    addCommand(TestCommand());
+    addCommand(AddCommand());
+    addCommand(RunCommand());
+    addCommand(AuthCommand());
   }
 
   @override
@@ -119,21 +129,12 @@ class BoltCommandRunner extends CommandRunner<int> {
     // Section 1: Available commands in Green
     buffer.writeln('Available commands:'.green());
     buffer
-        .writeln('  ${'help'.green()}      Display help information for bolt.');
-    buffer.writeln(
-        '  ${'build'.green()}     Builds the extension project in current working directory.');
-    buffer.writeln(
-        '  ${'clean'.green()}     Deletes old build files and caches.');
-    buffer.writeln(
-        '  ${'create'.green()}    Scaffolds a new extension project in the current working directory.');
-    buffer.writeln(
-        '  ${'sync'.green()}      Syncs dev and project dependencies.');
-    buffer.writeln(
-        '  ${'tree'.green()}      Prints the graph of the current extension project.');
-    buffer.writeln(
-        '  ${'migrate'.green()}   Migrates the rush/fast/extension-template project to bolt in current working directory.');
-    buffer.writeln(
-        '  ${'upgrade'.green()}   Upgrades Bolt to the latest available version.');
+        .writeln('  ${'help'.green().padRight(18)} Display help information for bolt.');
+    for (final cmd in commands.values) {
+      if (cmd.name == 'help') continue;
+      buffer.writeln(
+          '  ${cmd.name.green().padRight(18)} ${cmd.description}');
+    }
     buffer.writeln();
 
     // Section 2: Available arguments in Magenta

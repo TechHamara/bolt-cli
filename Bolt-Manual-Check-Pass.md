@@ -10,12 +10,17 @@
 
 Bolt CLI brings modern Android and JVM build practices to App Inventor extension development:
 
+* **⚡ Persistent Bolt Compiler Daemon (`bolt daemon`)**✅: Keeps JVM compiler loaded in memory for sub-second to 4s incremental builds.
+* **🔄 Dev Dependencies Sync (`bolt sync dev`)**✅: Auto-fetches and extracts latest `desugar_jdk_libs:2.1.5` and configuration files from Maven.
+* **📡 Auto-Detect AIDL Compilation**✅: Automatically finds and transpiles `.aidl` interface files in `src/` to `.java` without extra configuration flags.
+* **📦 Native C/C++ NDK Compression**✅: Uses `c++_static` STL linking and `--strip-unneeded` stripping to shrink C/C++ native extension `.aix` bundles.
+* **⚡ Incremental D8 Bytecode Caching**✅: Added D8 Bytecode Caching.
 * **📦 Maven-Style Dependency Management**✅: Seamlessly declare remote dependencies using coordinates (e.g., `groupId:artifactId:version`) or point to local JAR/AAR packages inside your `deps/` directory.
 * **☕ Kotlin & Java Language Support**✅: Write extensions in Java, Kotlin, or both simultaneously in the same project!
 * **⚙️ Full AndroidManifest.xml Integration**✅: Declare receivers, providers, services, activities, and metadata inside a custom `AndroidManifest.xml` in your `src/` folder with shorthand class name expansion (e.g. `.MyService` expands to your package name).
 * **🛠️ Custom XML Bundling (`@UsesXmls`)**⚠️ (Not Tested): Easily bundle custom XML files (layouts, menus, values, etc.) directly into your extension with automatic manifest merging.
-* **🛠️ Android Resources (`@UsesAssets`, `@UsesPermissions`)**⚠️ (Not Tested): Automatically includes assets and declares necessary permissions in your extension.
-* **🛠️ Native libraries (`@UsesNativeLibs`)**⚠️ (Not Tested): Automatically includes native libraries in your extension.
+* **🛠️ Android Resources (`@UsesAssets`, `@UsesPermissions`)**✅: Automatically includes assets and declares necessary permissions in your extension.
+* **🛠️ Native libraries (`@UsesNativeLibs`)**✅: Automatically includes native C/C++ libraries (`.so`) in your extension.
 * **🛠️ Advanced Optimization & Bytecode Stripping**✅: Supports R8, ProGuard optimizations, desugaring, and custom ProGuard configurations.
 * **🔄 Seamless Project Migration**✅: Easily port legacy projects (Rush, Fast,  `extension-template`, AI2 source projects) to modern Bolt CLI architecture with **automatic pre-migration backup ZIP** to guarantee no data loss.
 * **🛠️ Desugaring & ProGuard Optimization**✅: Fully supports Java 8+ features, including lambda expressions `()->`, and allows shrinking/obfuscation with aggressive defaults (`-optimizationpasses 5`).
@@ -73,9 +78,14 @@ curl https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/
 | `bolt build` | `-y, --sync`, `-o, --optimize`, `-m, --keep-manifest` | ✅ | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
 | `bolt clean` | *none* | ✅ | Deletes compiler caches and build files for a clean environment. |
 | `bolt create` | *interactive* | ✅ | Scaffolds a new project with IDE settings, sample templates, and configurations. |
-| `bolt sync` | `--dev-deps` | ✅ | Resolves dependencies declared in `bolt.yml` and performs Support-to-AndroidX Jetifier translation when `jetify: true` is set. |
-| `bolt tree` | *none* | ✅ | Displays a beautiful visual project directory hierarchy and saves a plain text copy to `tree.txt`. |
-| `bolt migrate` | `rush`, `fast`, `template`, `ai2` | ✅ | Converts legacy project architectures to modern Bolt CLI standard. Automatically saves a zip backup of the folder first. |
+| `bolt daemon` | `start`, `stop`, `status` | ✅ | Manages persistent background compiler daemon (Port 19090) for sub-4s builds. |
+| `bolt sync` | `dev`, `-f, --force` | ✅ | Syncs project dependencies or dev-dependencies (`desugar_jdk_libs:2.1.5`). |
+| `bolt add` | `<maven-coordinate>` | ✅ | Automatically searches Maven Central and adds dependencies to `bolt.yml`. |
+| `bolt run` | *none* | ✅ | Starts live testing session with hot-reloading over WebSocket to mobile device. |
+| `bolt auth` | *interactive* | ✅ | Manages offline RSA-2048 licensing for premium extensions. |
+| `bolt test` | *none* | ✅ | Executes unit tests locally on PC using JUnit 5 and Robolectric. |
+| `bolt tree` | *none* | ✅ | Displays visual project directory hierarchy and saves a plain text copy to `tree.txt`. |
+| `bolt migrate` | `rush`, `fast`, `template`, `ai2` | ✅ | Converts legacy project architectures to modern Bolt CLI standard. Automatically saves a zip backup first. |
 | `bolt upgrade` | `--force` | ⚠️ | Securely upgrades the local Bolt CLI binary to the latest release on GitHub. |
 
 ---

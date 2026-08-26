@@ -2,7 +2,7 @@
 
 # ⚡ Bolt CLI
 
-[![Latest Version](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)](https://github.com/TechHamara/bolt-cli)
+[![Latest Version](https://img.shields.io/badge/version-1.1.0-blue.svg?style=for-the-badge)](https://github.com/TechHamara/bolt-cli)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=for-the-badge)](#)
 [![MIT App Inventor](https://img.shields.io/badge/platform-App%20Inventor%202-orange.svg?style=for-the-badge)](https://github.com/mit-cml/appinventor-sources)
 
@@ -15,15 +15,28 @@
 
 ## 🌟 Key Features
 
-Bolt CLI brings modern Android and JVM build practices to App Inventor extension development:
+Bolt CLI brings modern Lightning Fast Java, Kotlin & C/C++ CLI Build tool for Extension Development:
 
-* **⚡ Lightning-Fast Builds**: Optimized build pipelines with high-speed incremental compiler integration keep compile-to-packaged times under a few seconds.
+* **⚡ Lightning-Fast Builds (`bolt daemon`)**: Bolt cli introduce new compiler daemon keeps JVM dependencies warmed up in RAM, combined with incremental D8 DEX caching to deliver **sub-4 second builds**.
+* **🔄 Dev Sync (`bolt sync dev`)**: Automatically fetches and updates `desugar_jdk_libs:2.1.5` and configuration files from Google Maven.
+* **📡 Auto-Detect AIDL Compilation**: Compile Android Interface Definition Language (`.aidl`) files automatically by dropping them anywhere in `src/`. No config flag needed!
+* **🔥 Live Hot-Reloading (`bolt run`) & [BoltHotReloader](https://github.com/TechHamara/BoltHotReloader)**: Pushes Java code changes directly to your device via WebSocket in less than a second! We built a custom `BoltHotReloader.aix` extension (223KB) that connects via `Java-WebSocket`, clears the `ReplForm` cache using **Java Reflection**, and hot-swaps your newly compiled `.dex` dynamically!
+* **🧠 Live Performance Monitor**: Catch memory leaks instantly in the CLI dashboard while hot-reloading.
+* **🔐 Automated Licensing (`bolt auth`)**: Secure your premium extensions with Offline RSA licensing automatically tied to the customer's MIT App Inventor email.
+* **🔨 Mini-NDK Support**: Build C/C++ extensions out-of-the-box without requiring the full Android Studio NDK (work the features after app inventor implementation on there AI2 build server, as it is not implemented yet as this features is under development).
+* **➕ Dependency Manager (`bolt add`)**: Easily add remote libraries and their transitive dependencies.
+* **🧪 Unit Testing Support (`bolt test`)**: Execute standard JUnit 5 tests locally on your PC powered by **[Robolectric](https://developer.android.com/training/testing/local-tests/robolectric)**.
 * **📦 Maven-Style Dependency Management**: Seamlessly declare remote dependencies using coordinates (e.g., `groupId:artifactId:version`) or point to local JAR/AAR packages inside your `deps/` directory.
 * **☕ Kotlin & Java Language Support**: Write extensions in Java, Kotlin, or both simultaneously in the same project!
 * **⚙️ Full AndroidManifest.xml Integration**: Declare receivers, providers, services, activities, and metadata inside a custom `AndroidManifest.xml` in your `src/` folder with shorthand class name expansion (e.g. `.MyService` expands to your package name).
-* **🛠️ Advanced Optimization & Bytecode Stripping**: Supports R8, ProGuard optimizations, desugaring, and custom ProGuard configurations.
+* **🛠️ Advanced Optimization & Bytecode Stripping**: Supports modern D8/R8 desugaring (compatible with **JDK 8 to JDK 25+**),
+**[CoreLibraryDesugaring](https://developer.android.com/studio/write/java8-support#library-desugaring)** for modern APIs (`java.time.*`, `java.util.stream.*`) on older devices, and robust ProGuard optimizations.
+* **📦 Dependency [Relocation](https://gradleup.com/shadow/configuration/relocation/) (Shading)**: Automatically resolves conflicting dependencies by shading and repackaging.
+* **🛡️ [Minimization](https://gradleup.com/shadow/configuration/minimizing/)  Exclusions**: Exclude specific maven coordinates from shrinking dynamically via `bolt.yml` to prevent reflection issues.
+* **📱 [Companion App](https://github.com/TechHamara/Bolt-Companion-App) Hot-Reloading**: Run `bolt run` to instantly push and test your extension on a live Android device via Wi-Fi UDP Auto-Discovery without reinstalling an APK!
+* **⚙️ Native C/C++ (JNI & NDK) Support**: Compile native `.so` shared libraries directly by enabling `ndk: enabled: true` in your `bolt.yml`.
+* **📡 Native AIDL Support**: Compile Android Interface Definition Language (`.aidl`) files automatically by dropping them in `src/` and setting `aidl: true` in your `bolt.yml`. No Android Studio required!
 * **🔄 Seamless Project Migration**: Easily port legacy projects (Rush, Fast,  `extension-template`, AI2 source projects) to modern Bolt CLI architecture with **automatic pre-migration backup ZIP** to guarantee no data loss.
-* **🛠️ Desugaring & ProGuard Optimization**: Fully supports Java 8+ features, including lambda expressions `()->`, and allows shrinking/obfuscation with aggressive defaults (`-optimizationpasses 5`).
 * **📄 Automatic Documentation**: Bolt auto-generates a formatted Markdown specifications catalog (`extension.txt`) on every build inside your `out/` directory.
 * **🎛️ Dynamic Android Compile SDK**: Supports target SDK configuration via `android_sdk` in `bolt.yml`. No more hardcoded SDK APIs!
 * **🧩 Multi-Component Support**: Bundle multiple `@Extension` components in a single `.aix` with segregated auto-generated documentation.
@@ -33,11 +46,11 @@ Bolt CLI brings modern Android and JVM build practices to App Inventor extension
 
 ---
 
-## Demo Terminal 
+## Demo Terminal
 
 <details><summary>here</summary>
 
-## Bolt CLI version:
+## Bolt CLI version
 
 <img width="968" height="797" alt="bolt-v" src="https://github.com/user-attachments/assets/d756a82a-8631-4d5e-9f3e-92fffd195c36" />
 
@@ -60,7 +73,6 @@ Bolt CLI brings modern Android and JVM build practices to App Inventor extension
 ## Bolt Build
 
 <img width="515" height="738" alt="bolt-build" src="https://github.com/user-attachments/assets/0cc04e94-276c-47d2-a02f-c2a48c941040" />
-
 
 </details>
 
@@ -105,9 +117,10 @@ Build and compile extensions directly on your phone! Run the automated Termux in
 ```bash
 curl https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/install-termux.sh -fsSL | bash
 ```
+
 </details>
 
-### Android (Bolt Mobile IDE) Comming Soon..
+### Android (Bolt Mobile IDE) Comming Soon
 
 Check Documentation [here](https://github.com/TechHamara/bolt-cli/wiki/Android-%E2%9A%A1Bolt-Mobile-IDE)
 
@@ -149,6 +162,8 @@ Let's create a simple extension:
 | `bolt build` | `-y, --sync`, `-o, --optimize`, `-m, --keep-manifest` | Compiles source files, processes annotations, resolves dependencies, and bundles the `.aix` file. |
 | `bolt clean` | *none* | Deletes compiler caches and build files for a clean environment. |
 | `bolt create` | *interactive* | Scaffolds a new project with IDE settings, sample templates, and configurations. |
+| `bolt test` | *none* | Compiles and executes JUnit 5 tests located in the `test/` directory using JUnit Console Launcher. |
+| `bolt run` | `-p, --port` | Starts a live hot-reload server with UDP auto-discovery to sync extension updates seamlessly to the Bolt Companion App. |
 | `bolt sync` | `--dev-deps` | Resolves dependencies declared in `bolt.yml` and performs Support-to-AndroidX Jetifier translation when `jetify: true` is set. |
 | `bolt tree` | *none* | Displays a beautiful visual project directory hierarchy and saves a plain text copy to `tree.txt`. |
 | `bolt migrate` | `rush`, `fast`, `template`, `ai2` | Converts legacy project architectures to modern Bolt CLI standard. Automatically saves a zip backup of the folder first. |
@@ -182,3 +197,11 @@ Got an issue, feature request, or just want to help build Bolt?
 ### ❤️ Thanks
 
 *Built with ❤️ for the MIT App Inventor Community.*
+
+## 🚀 Recent Powerful Features
+
+* **Live Hot-Reloading (olt run)**: Push Java code changes directly to the App Inventor Companion in milliseconds over Wi-Fi!
+
+* **Automated Licensing (olt auth)**: Secure your premium extensions with Offline RSA licensing automatically tied to the customer's MIT App Inventor email!
+* **Live Performance Monitor**: Catch memory leaks instantly in the CLI dashboard while hot-reloading.
+* **Mini-NDK Support**: Build native C/C++ extensions out-of-the-box without installing the full massive Android Studio NDK.

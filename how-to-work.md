@@ -4,7 +4,40 @@ Bolt CLI is built for maximum speed and absolute efficiency when scaffolding, re
 
 ---
 
-## 📦 1. The Dependency Resolution Pipeline (Gradle & Maven Resolvers)
+## ⚡ 1. Persistent Bolt Compiler Daemon & DEX Caching (`bolt daemon`)
+
+1. **Persistent Daemon (`bolt daemon start/stop/status`)**: Bolt CLI maintains a lightweight, background daemon HTTP socket server on port `19090`. The daemon keeps JVM compiler dependencies (`javac`, `kotlinc`, `D8`) loaded and warmed up in RAM, eliminating cold-start process spawning.
+2. **Auto-Idle Timeout**: To prevent background RAM waste, the daemon automatically shuts down after 15 minutes of inactivity.
+3. **Incremental D8 DEX Caching**: During `bolt build`, Bolt checks `d8TimestampKey` against input bytecode. If source `.class` files haven't changed, D8 DEX generation is safely skipped, reducing incremental build times to **~3 seconds**.
+
+## 🔥 2. Live Hot-Reloading & Monitor (`bolt run`)
+
+Bolt completely bypasses the traditional App Inventor compilation cycle. When you run `bolt run`:
+1. It compiles your Java source code into DEX format locally.
+2. It spins up a local WebSocket server (Port 9000).
+3. The custom **`BoltHotReloader.aix`** extension (which compiles to just 223KB) connects to Bolt CLI via `Java-WebSocket` over Wi-Fi, and the DEX bytes are streamed directly into the phone's memory.
+4. **Dynamic DEX Swapping**: When the extension receives the `.dex` payload, it saves it to the cache directory, uses **Java Reflection** to clear the `ReplForm`'s `loadedExternalDexs` internal list, and constructs a new `DexClassLoader` at runtime! This updates your UI components dynamically.
+5. Meanwhile, a background thread monitors the Dalvik Heap and sends memory telemetry back to the Bolt CLI, producing a live terminal dashboard!
+
+## 🔐 3. Offline RSA Licensing (`bolt auth`)
+
+1. **Initialization:** Generates an RSA-2048 keypair, saving the private key in `.bolt/private_key.pem` and injecting a `LicenseVerifier.java` containing the public key into the source.
+2. **Generation:** Signs a customer's MIT App Inventor email prefix (e.g. `kapil`) using the private key.
+3. **Verification:** At runtime, the extension dynamically reads its own Android Package Name (e.g. `appinventor.ai_kapil.MyApp`), strips the `ai_kapil`, and uses the embedded Public Key to cryptographically verify if the License Key was generated specifically for this email prefix!
+
+## 🧪 4. Advanced Tooling & Testing
+
+* **Dependency Manager (`bolt add`)**: Automatically fetches libraries from Maven Central, resolves transitive dependencies via POM parsing, and injects them directly into `bolt.yml`.
+* **Dev Sync (`bolt sync dev`)**: Downloads and updates `desugar_jdk_libs:2.1.5` and `desugar_jdk_libs_configuration.json` from Google Maven automatically.
+* **Robolectric & JUnit 5 (`bolt test`)**: Instead of needing an emulator, `bolt test` uses Robolectric to stub Android framework classes (like `Context`) locally on your PC, executing JUnit 5 assertions in milliseconds.
+* **Native AIDL Support (Auto-Detect)**: Bolt seamlessly scans for Android Interface Definition Language (`.aidl`) files in `src/`. Drop `.aidl` files anywhere in `src/` and Bolt transpiles them to `.java` interfaces automatically during `bolt build` without needing any configuration flag!
+* **NDK Size Optimization**: Native C/C++ builds use `c++_static` STL linking and `--strip-unneeded` symbol stripping, reducing compiled `.aix` file size from 4.6MB to **85KB**.
+* **Next-Gen Desugaring**: Bolt's D8 integration now seamlessly transpiles bytecode from **JDK 8 up to JDK 25+** to run on older Android runtimes!
+* **coreLibraryDesugaring**: By injecting `desugar_jdk_libs`, Bolt allows App Inventor extensions to natively use modern APIs like `java.util.stream` and `java.time` without crashing on Android 7 and below.
+
+---
+
+## 📦 4. The Dependency Resolution Pipeline (Gradle & Maven Resolvers)
 
 When you run `bolt sync` or compile your extension with `bolt build`, Bolt CLI executes a highly optimized, multi-tier dependency resolution pipeline.
 
@@ -231,7 +264,73 @@ When a compiler toolchain (Kotlin, Java, ProGuard, Desugarer, D8, or Manifest Me
 1. **Interception**: Any compilation exception is routed into `_catchAndStop(Object e, StackTrace s)`.
 2. **Matching & Categorization**: The diagnostic engine checks the failing `executable` path and the list of `arguments` passed to find matching tool signatures (e.g. `KaptCli` for Kotlin, `javac` for Java, `proguard` for obfuscation, `d8` for dexing, and `manifest-merger` for manifest compilation).
 3. **Actionable Step Resolution**: Each category is mapped to a tailored set of troubleshooting steps. For example, if Java compilation fails due to a lambda expression but `java8` is not enabled, the guide points directly to configuring `java8: true` inside `bolt.yml`.
-4. **Vibrant ANSI Borders & Typo Highlighting**: Utilizing the `tint` terminal coloring package, the CLI renders a beautifully styled vertical border box using custom harmonized colors (yellow for Kapt, red for Java compiler, cyan for ProGuard, magenta for desugaring, and bright yellow for manifest issues) to isolate## 🛠️ 8. Environment PATH Configuration, Layouts & Release Packaging for All Platforms
+4. **Vibrant ANSI Borders & Typo Highlighting**: Utilizing the `tint` terminal coloring package, the CLI renders a beautifully styled vertical border box using custom harmonized colors (yellow for Kapt, red for Java compiler, cyan for ProGuard, magenta for desugaring, and bright yellow for manifest issues) to isolate the error.
+
+---
+
+## 🚀 8. Advanced Build Enhancements (Desugaring, Relocation, & Minimization)
+
+Bolt CLI handles advanced Java bytecode orchestration to ensure seamless compatibility on older Android devices and prevent dependency collisions.
+
+### Core Library Desugaring (JDK 8-25+)
+Modern APIs like `java.time.*` are not natively available on older Android SDKs. When `coreLibraryDesugaring: true` is set in `bolt.yml`:
+1. Bolt bypasses the legacy standalone `desugar.jar`.
+2. It passes the `desugar_jdk_libs_configuration.json` rule set directly to the **D8 compiler**.
+3. D8 natively rewrites the Java 17+ bytecode and injects the `j$.time.*` replacements during the DEX generation.
+4. Bolt automatically bundles the `desugar_jdk_libs.jar` polyfill inside your extension's `.dex` file so it runs completely standalone!
+
+### Dependency Relocation (Shading) via JarJar
+To prevent `NoClassDefFoundError` or `DuplicateClass` conflicts when multiple extensions bundle the same libraries (like Guava or OkHttp):
+1. Setting `relocation.EnableAutoRelocation: true` triggers `JarJar`.
+2. Bolt dynamically creates `jarjar_rules.txt` rules translating `org.yourdep.**` into `<your.package>.repacked.org.yourdep.**`.
+3. The relocation happens on `AndroidRuntime.jar` *before* ProGuard obfuscation, isolating your dependencies safely.
+
+### ProGuard Minimization Exclusions
+To stop ProGuard from stripping classes that are only loaded via reflection:
+1. When a user defines a maven coordinate under `minimize.exclude_dependency` (e.g., `org.slf4j:slf4j-simple:.*`),
+2. Bolt automatically parses the `groupId` (`org.slf4j`) and injects `-keep class org.slf4j.** { *; }` and `-dontwarn` rules directly into the ProGuard execution pipeline.
+
+---
+
+## 🚀 9. Live Hot-Reloading (`bolt run` & UDP Discovery)
+
+Bolt CLI offers an unprecedented developer experience with instant hot-reloading using the **Bolt Companion App**.
+
+### The `bolt run` Pipeline
+1. **WebSocket Server**: When you execute `bolt run`, Bolt spins up a high-performance local WebSocket server on your machine (default port 9000).
+2. **UDP Auto-Discovery**: Simultaneously, it starts a UDP listener on port 9001. When the mobile Companion App broadcasts a `BOLT_DISCOVER` packet over the local Wi-Fi, the CLI instantly replies with its IP address and WebSocket port.
+3. **File Watching**: Bolt intelligently monitors your `src/` directory for any changes to Java, Kotlin, or C++ files.
+4. **On-the-Fly Dexing**: Upon detecting a file save, Bolt recompiles the specific classes, runs D8 to generate a `.dex` file, and pushes the raw byte stream directly over the WebSocket to the mobile device.
+5. **Dynamic Class Loading**: The Companion App receives the byte stream, saves it to the Android cache, and uses `DexClassLoader` to inject the new logic directly into the running application memory, bypassing the need to ever build or install an APK manually!
+
+---
+
+## ⚙️ 10. Native C/C++ (JNI & NDK) Compilation
+
+Bolt fully integrates with the Android Native Development Kit (NDK) to compile shared C/C++ libraries (`.so`) alongside your Java/Kotlin extension code.
+
+### Execution Flow
+1. **Trigger**: When `ndk: enabled: true` is set in `bolt.yml`, the NDK compilation phase is activated during `bolt build`.
+2. **Path Resolution**: Bolt automatically locates your local Android SDK and nested `ndk/` directory. It defaults to the highest installed NDK version unless specifically overridden.
+3. **CMake/ndk-build**: Bolt invokes the `ndk-build` script, passing it the path to your `jni/Android.mk` and `jni/Application.mk` configuration files.
+4. **ABI Architecture Compilation**: The C/C++ source code is compiled down to machine code for various architectures (e.g., `armeabi-v7a`, `arm64-v8a`, `x86_64`) based on your `Application.mk`.
+5. **Bundling**: The resulting `.so` library files are cleanly packaged into the root of the generated `AndroidRuntime.jar` so App Inventor extracts and maps them automatically at runtime.
+
+---
+
+## 🧪 11. Unit Testing Pipeline (`bolt test`)
+
+Bolt CLI integrates **JUnit 5** to provide a seamless testing environment for your extensions directly in your terminal, without needing an Android device or emulator.
+
+### The Execution Flow
+1. **Compilation**: When you run `bolt test`, Bolt first compiles your extension's main source code (`src/`). Then it locates your `test/` directory and compiles your test classes against the generated bytecode and any `test_dependencies` defined in `bolt.yml`.
+2. **Classpath Resolution**: It dynamically generates a unified Java classpath including your test bytecode, extension bytecode, required standard dependencies, and the JUnit 5 platform dependencies (like `junit-jupiter-api` and `junit-platform-console-standalone`).
+3. **Execution**: Bolt invokes the `ConsoleLauncher` from the JUnit platform, isolating execution to ensure your test code doesn't interfere with the global JVM state.
+4. **Reporting**: The test results, including failures, passed tests, and stack traces, are rendered cleanly in the console output. 
+
+---
+
+## 🛠️ 12. Environment PATH Configuration, Layouts & Release Packaging for All Platforms
 
 This section outlines how installers configure environment paths, where files are saved, and how to package release ZIP assets on GitHub for Windows, Linux, and macOS.
 
@@ -385,3 +484,43 @@ When Bolt CLI is fully installed, its executable, tools, and cache repository re
   `~/.bolt/libs/` (contains `kawa.jar`, `webrtc.jar`, `android-35.jar`, etc.)
 * **Local Maven Cache Location**:
   `~/.bolt/repository/`
+
+---
+
+## 🛡️ 13. String Obfuscation Pipeline (StrGuard)
+
+Bolt CLI integrates **StrGuard**, a powerful bytecode-level string obfuscation tool, to protect hardcoded strings (like API keys, endpoint URLs, and sensitive logic) in your App Inventor extensions.
+
+### Configuration
+You enable and configure StrGuard inside your `bolt.yml`:
+```yaml
+strguard:
+  enabled: true
+  key: "MyEncryptionKey"
+  packages:
+    - "com.myextension"
+```
+
+### Step-by-Step Execution Flow
+When you run `bolt build`, the obfuscation happens seamlessly under the hood:
+
+#### Step 1: Java/Kotlin Compilation
+Bolt CLI first compiles all your source files (`.java` and `.kt`) into standard `.class` bytecode files using `javac` and `kotlinc`. These compiled files are temporarily stored in the build directory (`.bolt/build/classes/`).
+
+#### Step 2: Triggering StrGuard
+Immediately after successful compilation (and *before* any DEX generation, ProGuard shrinking, or `.jar` packaging), Bolt CLI checks your `bolt.yml`. If `strguard.enabled` is `true`, it triggers the StrGuard pipeline.
+
+#### Step 3: Bytecode Analysis and Transformation (ASM)
+Bolt CLI executes the bundled `strguard.jar` (powered by the ASM bytecode manipulation framework) against your compiled `.class` files.
+1. **Targeting**: StrGuard scans the classes belonging only to the packages you specified in the `packages` list (e.g., `com.myextension`).
+2. **Detection**: It locates all `LDC` (Load Constant) instructions in the bytecode that load plain-text `String` objects (e.g., `"My Secret Token"`).
+3. **Encryption**: It encrypts each detected string using a highly secure XOR-based algorithm, utilizing either the custom `key` you provided or a securely auto-generated hardware-tied key.
+4. **Bytecode Modification**: The original `LDC` instructions containing the plain-text strings are completely wiped from the bytecode. They are replaced with a series of byte array (`newarray byte`) initialization instructions and a static method call (`invokestatic`).
+
+#### Step 4: Runtime Decoding Injection
+StrGuard injects a tiny decoder class (`StrGuardImpl`) into your compiled bytecode. At runtime, when your extension is loaded in an App Inventor app, the injected bytecode dynamically reconstructs the encrypted byte arrays back into the original strings exactly when they are needed.
+
+#### Step 5: Final Packaging
+Once the StrGuard execution finishes modifying the `.class` files in place, Bolt CLI proceeds to package these obfuscated classes into `AndroidRuntime.jar` and eventually converts them into Dalvik bytecode (`classes.dex`). 
+
+Because the plain-text strings were wiped before packaging, reverse-engineering your final `.aix` extension using tools like `jadx` or `CFR` will only reveal meaningless byte arrays and a decoder function, keeping your sensitive strings safe from prying eyes!

@@ -1,6 +1,7 @@
 import 'dart:convert' show jsonDecode, jsonEncode;
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:args/command_runner.dart';
 import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
@@ -78,9 +79,13 @@ class SyncCommand extends Command<int> {
 
     var syncedCount = 0;
 
-    final onlyDevDeps = (argResults?['dev-deps'] ?? false) as bool;
+    final rest = argResults?.rest ?? [];
+    final isDevPositional = rest.contains('dev') || rest.contains('dev-deps');
+    final onlyDevDeps = ((argResults?['dev-deps'] ?? false) as bool) || isDevPositional;
     final onlyExtDeps = (argResults?['project-deps'] ?? false) as bool;
     final useForce = (argResults?['force'] ?? false) as bool;
+
+    await _syncDesugarJdkLibs(force: useForce || isDevPositional);
 
     final config = await Config.load(_fs.configFile, _lgr);
     if (config == null && !onlyDevDeps) {
@@ -357,6 +362,8 @@ class SyncCommand extends Command<int> {
 
       final extDepCoords = config.dependencies
           .where((el) => !el.endsWith('.jar') && !el.endsWith('.aar'));
+      final extTestDepCoords = config.testDependencies
+          .where((el) => !el.endsWith('.jar') && !el.endsWith('.aar'));
       final extProvidedDepCoords = config.providedDependencies
           .where((el) => !el.endsWith('.jar') && !el.endsWith('.aar'));
 
@@ -379,6 +386,14 @@ class SyncCommand extends Command<int> {
           downloadSources: true,
         );
         syncedCount += res2.length;
+
+        final res3 = await sync(
+          cacheBox: libService.extensionDepsBox!,
+          coordinates: {Scope.test: extTestDepCoords},
+          repositories: config.repositories,
+          downloadSources: true,
+        );
+        syncedCount += res3.length;
         await timestampBox.put(configTimestampKey, DateTime.now());
       } catch (_) {
         _lgr.stopTask(false);
@@ -866,5 +881,53 @@ class SyncCommand extends Command<int> {
 
     await vscodeSettingsFile
         .writeAsString(getVscodeSettingsJson(classesJars));
+  }
+
+  Future<void> _syncDesugarJdkLibs({bool force = false}) async {
+    final toolsDir = p.join(_fs.boltHomeDir.path, 'libs', 'tools').asDir(true);
+    final desugarJar = File(p.join(toolsDir.path, 'desugar_jdk_libs.jar'));
+    final desugarConfig = File(p.join(toolsDir.path, 'desugar_jdk_libs_configuration.json'));
+
+    if (!force && desugarJar.existsSync() && desugarConfig.existsSync()) {
+      return;
+    }
+
+    _lgr.info('Syncing desugar_jdk_libs & configuration (v2.1.5)...');
+    try {
+      final client = HttpClient();
+
+      final jarUri = Uri.parse(
+          'https://maven.google.com/com/android/tools/desugar_jdk_libs/2.1.5/desugar_jdk_libs-2.1.5.jar');
+      final jarReq = await client.getUrl(jarUri);
+      final jarRes = await jarReq.close();
+      if (jarRes.statusCode == 200) {
+        final bytes = await jarRes.fold<List<int>>([], (a, b) => a..addAll(b));
+        await desugarJar.writeAsBytes(bytes);
+        _lgr.info('  ✓ Synced desugar_jdk_libs.jar (2.1.5)');
+      }
+
+      final configJarFile = File(p.join(toolsDir.path, 'desugar_jdk_libs_configuration_2.1.5.jar'));
+      final configUri = Uri.parse(
+          'https://maven.google.com/com/android/tools/desugar_jdk_libs_configuration/2.1.5/desugar_jdk_libs_configuration-2.1.5.jar');
+      final configReq = await client.getUrl(configUri);
+      final configRes = await configReq.close();
+      if (configRes.statusCode == 200) {
+        final bytes = await configRes.fold<List<int>>([], (a, b) => a..addAll(b));
+        await configJarFile.writeAsBytes(bytes);
+
+        final archive = ZipDecoder().decodeBytes(bytes);
+        for (final file in archive) {
+          if (file.name == 'META-INF/desugar/d8/desugar.json') {
+            final content = file.content as List<int>;
+            await desugarConfig.writeAsBytes(content);
+            break;
+          }
+        }
+        _lgr.info('  ✓ Synced desugar_jdk_libs_configuration.json (2.1.5)');
+      }
+      client.close();
+    } catch (e) {
+      _lgr.warn('Failed to sync desugar_jdk_libs: $e');
+    }
   }
 }
