@@ -1073,7 +1073,8 @@ config enables it; use `-r` to force ProGuard on for this build.''',
 
     final artJarPath =
         p.join(_fs.buildRawDir.path, 'files', 'AndroidRuntime.jar');
-    final zipEncoder = ZipFileEncoder()..create(artJarPath);
+    final zipEncoder = ZipFileEncoder()
+      ..create(artJarPath, level: 9);
 
     final deps = await _libService.extensionDependencies(config);
     final requiredDeps = deps
@@ -1114,11 +1115,7 @@ config enables it; use `-r` to force ProGuard on for this build.''',
                 addedPaths.contains(el.name) || el.name.startsWith('META-INF'));
         for (final file in decodedJar) {
           if (file.isFile) {
-            zipEncoder.addArchiveFile(ArchiveFile(
-              file.name,
-              file.size,
-              file.content,
-            ));
+            zipEncoder.addArchiveFile(ArchiveFile(file.name, file.size, file.content));
             addedPaths.add(file.name);
           }
         }
@@ -1154,7 +1151,8 @@ config enables it; use `-r` to force ProGuard on for this build.''',
 
     final outputDir = p.join(_fs.cwd, 'out').asDir(true);
     final aix = p.join(outputDir.path, '${await org}.aix');
-    final zipEncoder = ZipFileEncoder()..create(aix);
+    final zipEncoder = ZipFileEncoder()
+      ..create(aix, level: 9);
 
     try {
       _lgr.dbg('Packaging compiled classes.');

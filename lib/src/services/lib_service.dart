@@ -91,6 +91,48 @@ class LibService {
       'ddmlib.jar',
     };
 
+    final allowedPrefixes = [
+      'androidx-',
+      'annotation',
+      'appcompat',
+      'asynclayoutinflater',
+      'cardview',
+      'collection',
+      'constraintlayout',
+      'coordinatorlayout',
+      'core',
+      'cursoradapter',
+      'customview',
+      'documentfile',
+      'drawerlayout',
+      'dynamicanimation',
+      'fragment',
+      'interpolator',
+      'legacy-support',
+      'lifecycle',
+      'loader',
+      'localbroadcastmanager',
+      'print',
+      'recyclerview',
+      'slidingpanelayout',
+      'swiperefreshlayout',
+      'vectordrawable',
+      'versionedparcelable',
+      'viewpager',
+    ];
+
+    final essentialAi2Jars = {
+      'webrtc.jar',
+      'kawa.jar',
+      'mpandroidchart.jar',
+      'osmdroid.jar',
+      'physicaloid.jar',
+      'AndroidRuntime.jar',
+      'runtime.jar',
+      'annotations.jar',
+      'annotations-processor.jar',
+    };
+
     final libsDirFiles = _fs.libsDir.existsSync()
         ? _fs.libsDir
             .listSync()
@@ -110,7 +152,8 @@ class LibService {
               if (name.startsWith('android-') && name != targetAndroidJar) {
                 return false;
               }
-              return true;
+              if (essentialAi2Jars.contains(name)) return true;
+              return allowedPrefixes.any((prefix) => name.toLowerCase().startsWith(prefix));
             })
             .map((f) => p.basename(f.path))
             .toSet()
