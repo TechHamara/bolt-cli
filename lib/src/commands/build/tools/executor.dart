@@ -134,13 +134,17 @@ class Executor {
     libraryJars.add(_androidJar(config));
 
     final args = <String>[
+      '-Xmx2048m',
+      '-XX:+UseParallelGC',
       ...['-cp', pgJars.join(BuildUtils.cpSeparator)],
       'proguard.ProGuard',
       // Suppress non-fatal warnings like duplicate classes to keep build output clean
       '-ignorewarnings',
       ...['-injars', artJarPath],
       ...['-outjars', optimizedJar.path],
-      ...['-libraryjars', libraryJars.join(BuildUtils.cpSeparator)],
+      for (final libJar in libraryJars) ...['-libraryjars', libJar],
+      '-optimizationpasses',
+      '1',
       // Always suppress warnings coming from the AI2 runtime (and related
       // helper classes) so that shrinking never fails due to resolvers being
       // intentionally omitted.  Users can still add their own -dontwarn rules

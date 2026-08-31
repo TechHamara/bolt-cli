@@ -526,7 +526,7 @@ config enables it; use `-r` to force ProGuard on for this build.''',
       configR8: config.r8,
     );
     var runProguard = shrinkInfo.runProguard;
-    final runR8 = shrinkInfo.runR8;
+    var runR8 = shrinkInfo.runR8;
     var shrink = shrinkInfo.shrink;
     var shouldRunProguard = shrinkInfo.shouldRunProguard;
     var performingShrink = shrinkInfo.performingShrink;
@@ -545,10 +545,14 @@ config enables it; use `-r` to force ProGuard on for this build.''',
     if (optimize) {
       if (!performingShrink) {
         shrink = true;
-        shouldRunProguard = true;
         performingShrink = true;
-        runProguard = true;
         dontObfuscate = true;
+        if (requestedProguard == true || (config.proguard && !config.r8)) {
+          shouldRunProguard = true;
+          runProguard = true;
+        } else {
+          runR8 = true;
+        }
       }
     }
 
