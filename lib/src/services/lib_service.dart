@@ -81,14 +81,52 @@ class LibService {
   }
 
   Future<List<Artifact>> providedDependencies(Config? config) async {
-    final local = [
+    final toolJarsToExclude = {
+      'd8.jar',
+      'dx.jar',
+      'apksigner.jar',
+      'bundletool.jar',
+      'android-javadoc.jar',
+      'sdklib.jar',
+      'ddmlib.jar',
+    };
+
+    final libsDirFiles = _fs.libsDir.existsSync()
+        ? _fs.libsDir
+            .listSync()
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.jar'))
+            .where((f) {
+              final name = p.basename(f.path);
+              if (toolJarsToExclude.contains(name)) return false;
+              if (name.startsWith('bundletool-all-')) return false;
+              if (name.startsWith('asm-')) return false;
+              if (name.startsWith('builder-')) return false;
+              if (name.startsWith('ddmlib_')) return false;
+              if (name.startsWith('layoutlib-api-')) return false;
+              if (name.startsWith('sdk-common-')) return false;
+              if (name.startsWith('common-24.')) return false;
+              final targetAndroidJar = 'android-${config?.androidSdk ?? androidPlatformSdkVersion}.jar';
+              if (name.startsWith('android-') && name != targetAndroidJar) {
+                return false;
+              }
+              return true;
+            })
+            .map((f) => p.basename(f.path))
+            .toSet()
+        : <String>{};
+
+    final localNames = {
       'android-${config?.androidSdk ?? androidPlatformSdkVersion}.jar',
       'webrtc.jar',
       'kawa.jar',
       'mpandroidchart.jar',
       'osmdroid.jar',
       'physicaloid.jar',
-    ].map((el) => Artifact(
+      ...libsDirFiles,
+    };
+
+    final local = localNames.map((el) => Artifact(
           coordinate: el,
           scope: Scope.provided,
           artifactFile: p.join(_fs.libsDir.path, el),
