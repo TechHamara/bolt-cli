@@ -74,7 +74,7 @@ function Invoke-DownloadWithProgress {
             $SpeedStr = $Speed.ToString("0.00")
             $PctStr = $Pct.ToString("0.00").PadLeft(6)
             
-            $ProgressMsg = "`r$Esc[33;1m$PrefixText:$Esc[0m $Esc[33;1m$PctStr%$Esc[0m ($Esc[36m$RxMB MB/$TotalMB MB$Esc[0m) | $Esc[32;1m$SpeedStr MB/s$Esc[0m |"
+            $ProgressMsg = "`r$Esc[33;1m$($PrefixText):$Esc[0m $Esc[33;1m$PctStr%$Esc[0m ($Esc[36m$RxMB MB/$TotalMB MB$Esc[0m) | $Esc[32;1m$SpeedStr MB/s$Esc[0m |"
             [Console]::Write($ProgressMsg)
             $LastReportTime = $Now
             $LastReportBytes = $ReceivedBytes
