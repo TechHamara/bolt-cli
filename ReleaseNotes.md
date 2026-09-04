@@ -1,6 +1,16 @@
 # Release Notes
 
-## **1.1.0 (Latest)**
+## **1.1.1 (Latest)**
+
+- **Interactive `bolt upgrade` Command**:
+  - Displays version and download size details (`Current version: v1.1.0`, `New version: v1.1.1`, `Download size: 589.14 MB`).
+  - Added interactive prompt: `Do you want to upgrade? [Yes/No] (Default: No)`.
+  - Added mode selection prompt: `Select update mode? [Fresh/InPlace] type 2 for InPlace, (Default: Fresh)`.
+  - Fresh mode downloads full `bolt-win.zip` for a complete installation update.
+  - InPlace mode downloads `bin.zip` and replaces only `bolt.exe` at installation path (`$BOLT_HOME\bin\bolt.exe`).
+  - **Real-time Progress Visualizer**: Added live download percentage, downloaded size, and real-time speed display (`Downloading: 12.00% (43.45 MB/362.14 MB) | 3.94 MB/s |`) matching Fast CLI behavior across CLI and PowerShell installation scripts.
+
+## **1.1.0**
 
 Bolt CLI brings modern Lightning Fast Java, Kotlin & C/C++ CLI Build tool for Extension Development:
 

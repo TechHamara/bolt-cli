@@ -167,7 +167,7 @@ Let's create a simple extension:
 | `bolt sync` | `--dev-deps` | Resolves dependencies declared in `bolt.yml` and performs Support-to-AndroidX Jetifier translation when `jetify: true` is set. |
 | `bolt tree` | *none* | Displays a beautiful visual project directory hierarchy and saves a plain text copy to `tree.txt`. |
 | `bolt migrate` | `rush`, `fast`, `template`, `ai2` | Converts legacy project architectures to modern Bolt CLI standard. Automatically saves a zip backup of the folder first. |
-| `bolt upgrade` | `--force` | Securely upgrades the local Bolt CLI binary to the latest release on GitHub. |
+| `bolt upgrade` | `--force`, `--yes`, `--mode` | Securely upgrades the local Bolt CLI binary to the latest release on GitHub with interactive prompts and real-time progress bar. |
 
 ---
 

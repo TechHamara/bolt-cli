@@ -1,3 +1,3 @@
 // Auto-generated; DO NOT modify
-const boltVersion = '1.1.0';
-const boltBuiltOn = '2026-08-26 11:10:00';
+const boltVersion = '1.1.1';
+const boltBuiltOn = '2026-09-02 22:00:00';

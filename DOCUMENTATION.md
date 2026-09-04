@@ -153,7 +153,7 @@ Your generated `.aix` extension bundle will be available in the `out/` directory
 | `bolt sync` | `--dev-deps` | Resolves dependencies declared in `bolt.yml`. Performs automated Support-to-AndroidX Jetifier translation when `jetify: true` is configured. |
 | `bolt tree` | *none* | Renders a beautiful visual tree of the current project's hierarchical structure and automatically saves it as `tree.txt` in the project root. |
 | `bolt migrate` | *none* | Port legacy projects (Bolt v1, `extension-template`, AI2 source, or `fast.yml` projects) to modern Bolt CLI architecture. Automatically zips the current project folder as a backup before migration. |
-| `bolt upgrade` | `--force` | Upgrade the local Bolt CLI binary to the latest release on GitHub. |
+| `bolt upgrade` | `--force`, `--yes`, `--mode` | Interactive upgrade for Bolt CLI with real-time download progress bar and Fresh/InPlace update modes. |
 
 ### Global Options
 

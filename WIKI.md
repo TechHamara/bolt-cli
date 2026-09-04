@@ -240,5 +240,5 @@ Whenever the `bolt migrate` command is executed, Bolt CLI performs an automated 
 | `bolt test` | Executes local JUnit 5 / Robolectric unit tests without needing an emulator. |
 | `bolt tree` | Displays visual file directory structure and saves it to `tree.txt`. |
 | `bolt migrate <type>` | Safely migrates legacy projects (`rush`, `fast`, `template`, `ai2`) with automatic zip backup. |
-| `bolt upgrade` | Upgrades Bolt CLI to the latest version. |
+| `bolt upgrade` | Upgrades Bolt CLI to the latest version with interactive prompts and real-time progress bar. |
 

@@ -86,7 +86,7 @@ curl https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/
 | `bolt test` | *none* | ✅ | Executes unit tests locally on PC using JUnit 5 and Robolectric. |
 | `bolt tree` | *none* | ✅ | Displays visual project directory hierarchy and saves a plain text copy to `tree.txt`. |
 | `bolt migrate` | `rush`, `fast`, `template`, `ai2` | ✅ | Converts legacy project architectures to modern Bolt CLI standard. Automatically saves a zip backup first. |
-| `bolt upgrade` | `--force` | ⚠️ | Securely upgrades the local Bolt CLI binary to the latest release on GitHub. |
+| `bolt upgrade` | `--force`, `--yes`, `--mode` | ⚠️ | Securely upgrades the local Bolt CLI binary to the latest release on GitHub with interactive prompts and real-time progress bar. |
 
 ---
 

@@ -1,6 +1,6 @@
 name: bolt
 description: A new and improved way of building MIT AI2 extensions with Bolt.
-version: 1.1.0
+version: 1.1.1
 homepage: https://github.com/TechHamara/bolt-cli
 
 executables:
