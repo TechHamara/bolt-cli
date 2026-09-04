@@ -9,7 +9,7 @@ $Esc = [char]27
 
 if ($env:OS -ne "Windows_NT") {
   Write-Error "This script is only for Windows"
-  Exit 1
+  return
 }
 
 # determine the target installation directory
@@ -40,7 +40,7 @@ if (Test-Path "$BinDir\bolt.exe") {
     Write-Host "`n$Esc[32;1mBolt CLI is already installed!$Esc[0m"
     Write-Host "$Esc[36mVersion: $boltVersion$Esc[0m"
     Write-Host "If you want to reinstall or upgrade, please use 'bolt upgrade' or remove the $BoltHome directory first.`n"
-    Exit 0
+    return
 }
 
 function Invoke-DownloadWithProgress {
