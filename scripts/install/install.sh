@@ -3,64 +3,69 @@
 # Exit immediately if any command exits with non-zero exit status.
 set -e
 
+skipJava=false
+boltHome=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --skip-java|--no-jdk)
+      skipJava=true
+      shift
+      ;;
+    --path|-p)
+      boltHome="$2"
+      shift 2
+      ;;
+    -*)
+      shift
+      ;;
+    *)
+      if [ -z "$boltHome" ]; then
+        boltHome="$1"
+      fi
+      shift
+      ;;
+  esac
+done
+
 # optionally provide the installation directory as the first argument
-if [ -n "$1" ]; then
-  boltHome="$1"
-elif [ -n "$BOLT_HOME" ]; then
-  boltHome="$BOLT_HOME"
-else
-  if ! command -v bolt >/dev/null 2>&1; then
-    boltHome="$HOME/.bolt"
+if [ -z "$boltHome" ]; then
+  if [ -n "$BOLT_HOME" ]; then
+    boltHome="$BOLT_HOME"
   else
-    boltHome="$(dirname $(dirname $(which bolt)))"
+    if ! command -v bolt >/dev/null 2>&1; then
+      boltHome="$HOME/Bolt"
+    else
+      boltHome="$(dirname $(dirname $(which bolt)))"
+    fi
   fi
 fi
 
-# ensure the directory exists
-mkdir -p "$boltHome"
+# ensure directory exists
+mkdir -p "$boltHome/bin"
 
-if [ "$OS" = "Windows_NT" ]; then
-  target="win"
-else
-  case $(uname -sm) in
-  Darwin*) target="mac" ;;
-  *) target="linux" ;;
-  esac
-fi
+zipUrl="https://github.com/TechHamara/bolt-cli/releases/latest/download/bolt.zip"
+echo "Downloading Universal Bolt CLI from $zipUrl..."
+curl --location --progress-bar -o "$boltHome/bolt.zip" "$zipUrl"
 
-zipUrl="https://github.com/TechHamara/bolt-cli/releases/latest/download/bolt-$target.zip"
-curl --location --progress-bar -o "$boltHome/bolt-$target.zip" "$zipUrl"
+unzip -oq "$boltHome/bolt.zip" -d "$boltHome"/
+rm "$boltHome/bolt.zip"
 
-unzip -oq "$boltHome/bolt-$target.zip" -d "$boltHome"/
-rm "$boltHome/bolt-$target.zip"
-
-# Make the Bolt binary executable on Unix systems. 
-if [ ! "$OS" = "Windows_NT" ]; then
+# Make the Bolt binary executable
+if [ -f "$boltHome/bin/bolt" ]; then
   chmod +x "$boltHome/bin/bolt"
 fi
 
 echo
-echo "Successfully downloaded the Bolt CLI binary at $boltHome/bin/bolt"
+echo "Successfully installed Bolt CLI at $boltHome/bin/bolt"
 
-# Prompt user of they want to download dev dependencies now.
-echo "Now, proceeding to download necessary Java libraries (approx size: 170 MB)."
-read -p "Do you want to continue? (Y/n) " -n 1 -r
-echo
-
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-  if [ "$OS" = "Windows_NT" ]; then
-    "./$boltHome/bin/bolt.exe" deps sync --dev-deps --no-logo
-  else
-    "./$boltHome/bin/bolt" deps sync --dev-deps --no-logo
-  fi
-fi
-
-echo
-if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-  echo "Success! Installed Bolt CLI at $boltHome/bin/bolt"
-else
-  echo "Bolt CLI has been partially installed at $boltHome/bin/bolt"
-  echo 'Please run `bolt deps sync --dev-deps` to download the necessary Java libraries.'
+# Verify Java installation
+if [ "$skipJava" = true ]; then
+  echo "Skipping Java verification as requested (--skip-java)."
+elif ! command -v java >/dev/null 2>&1; then
+  echo "Warning: Java runtime (JRE/JDK 11 or later) is required to run Bolt CLI."
+  echo "Note: Bolt bundles ECJ compiler (ecj.jar) for compiling Java, but requires Java runtime to execute."
+  echo "Please install OpenJDK: sudo apt install openjdk-17-jdk (or brew install openjdk@17)"
 fi
 
 shell_profile=".bashrc"

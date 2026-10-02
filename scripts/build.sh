@@ -1,57 +1,55 @@
 #!/bin/bash
+set -e
 
-# Exit immediately if any commands exit with non-zero exit status.
-set -euo pipefail
+VERSION="${1:-2.0.0}"
+echo "Building Universal Bolt CLI v$VERSION..."
 
-version="${VERSION:-}"
+./gradlew assembleDistribution
 
-while (( "$#" )); do
-  case "$1" in
-    "-v" | "--version")
-      if [ $# -lt 2 ]; then
-        echo "error: missing value for $1"
-        exit 1
-      fi
-      version="$2"
-      shift 2 ;;
-    *)
-      echo "error: Unknown argument: $1"
-      exit 1 ;;
-  esac
-done
+DIST_DIR="distribution"
+BIN_DIR="$DIST_DIR/bin"
+mkdir -p "$BIN_DIR"
 
-if [ -z "$version" ] && [ -f "pubspec.yaml" ]; then
-  version=$(awk '/^version:/ {print $2; exit}' pubspec.yaml)
-fi
+cp "$DIST_DIR/bolt.jar" "$BIN_DIR/bolt.jar"
+cp "$DIST_DIR/bolt.bat" "$BIN_DIR/bolt.bat"
+cp "$DIST_DIR/bolt" "$BIN_DIR/bolt"
+chmod +x "$BIN_DIR/bolt"
 
-if [ -z "$version" ]; then
-  version="0.0.0"
-fi
+# Remove any icon inside bin or libs
+rm -f "$BIN_DIR/icon.png"
+rm -f "$DIST_DIR/libs/icon.png"
+rm -f "$DIST_DIR/libs/tools/icon.png"
+rm -f "$DIST_DIR/libs/tools/aidl/icon.png"
 
-# Write version.dart file
-function writeVersionDart() {
-  file='./lib/version.dart'
+STAGING="$DIST_DIR/staging"
+rm -rf "$STAGING"
+mkdir -p "$STAGING/bin" "$STAGING/libs"
 
-  printf "// Auto-generated; DO NOT modify\n" > "$file"
-  printf "const boltVersion = '%s';\n" "$version" >> "$file"
-  printf "const boltBuiltOn = '%s';\n" "$(date '+%Y-%m-%d %H:%M:%S')" >> "$file"
+cp -r "$BIN_DIR"/* "$STAGING/bin/"
+cp -r "$DIST_DIR/libs"/* "$STAGING/libs/"
+[ -f "$DIST_DIR/icon.png" ] && cp "$DIST_DIR/icon.png" "$STAGING/icon.png"
 
-  echo 'Generated lib/version.dart'
-}
-writeVersionDart
+rm -f "$STAGING/bin/icon.png"
+rm -f "$STAGING/libs/icon.png"
+rm -f "$STAGING/libs/tools/icon.png"
+rm -f "$STAGING/libs/tools/aidl/icon.png"
 
-mkdir -p "build/bin"
+echo "Compressing universal package bolt.zip (Fresh, with bundled Mini-NDK)..."
+rm -f "bolt.zip" "bolt-universal.zip" "bolt-win.zip" "bolt-linux.zip" "bolt-mac.zip" "bolt-termux.zip"
+(cd "$STAGING" && zip -rq "../../bolt.zip" .)
+rm -rf "$STAGING"
+echo "Created universal bolt.zip successfully!"
 
-if [ "${OS:-}" = "Windows_NT" ]; then
-  ext=".exe"
-else
-  ext=""
-fi
+# InPlace update package update.zip (contains bin/ ONLY, NO icon.png)
+UPDATE_STAGING="$DIST_DIR/update_staging"
+rm -rf "$UPDATE_STAGING"
+mkdir -p "$UPDATE_STAGING/bin"
+cp -r "$BIN_DIR"/* "$UPDATE_STAGING/bin/"
+rm -f "$UPDATE_STAGING/icon.png" "$UPDATE_STAGING/bin/icon.png"
 
-dart pub get
-# Compile Bolt executable
-dart compile exe -o "build/bin/bolt$ext" bin/bolt.dart
-
-if [ "${OS:-}" != "Windows_NT" ]; then
-  chmod +x "build/bin/bolt$ext"
-fi
+rm -f "update.zip"
+echo "Compressing lightweight update package update.zip (InPlace, bin only without icon.png)..."
+(cd "$UPDATE_STAGING" && zip -rq "../../update.zip" .)
+rm -rf "$UPDATE_STAGING"
+echo "Created lightweight update.zip successfully (without icon.png)!"
+echo "Build and packaging complete! (bolt.zip & update.zip)"

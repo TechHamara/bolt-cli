@@ -1,244 +1,371 @@
-# 📖 Bolt CLI - Official Developer Wiki & Documentation
+# ⚡ Bolt CLI Wiki: Installation & Setup Guide
 
-Welcome to the official developer wiki for **Bolt CLI**, the high-performance extension builder for MIT App Inventor 2. This wiki serves as a deep architectural guide, complete configuration reference, and best-practices guide for building robust, modern JVM/Android extensions.
-
-> **Note**: Bolt CLI is built upon the wonderful foundation of the [Rush CLI](https://github.com/shreyashsaitwal/rush-cli) project by [Shreyash Saitwal](https://github.com/shreyashsaitwal). Sincere thanks to the original creators and developers for their paving work in JVM/App Inventor builder pipelines.
+Welcome to the official installation guide for **Bolt CLI** — the universal, lightning-fast framework and build system for MIT App Inventor 2 extensions.
 
 ---
 
-## 📂 Table of Contents
+## 📑 Table of Contents
 
-1. [Getting Started & Scaffolding](#1-getting-started--scaffolding)
-2. [Project Directory Architecture](#2-project-directory-architecture)
-3. [Configuration Reference (`bolt.yml`)](#3-configuration-reference-boltyml)
-4. [The Dependency Classpath Model](#4-the-dependency-classpath-model)
-5. [AndroidManifest.xml Integration](#5-androidmanifestxml-integration)
-6. [Bytecode Optimization & Size Shrinking](#6-bytecode-optimization--size-shrinking)
-7. [Automated Project Migration & Safe Backups](#7-automated-project-migration--safe-backups)
+- [⚡ Bolt CLI Wiki: Installation \& Setup Guide](#-bolt-cli-wiki-installation--setup-guide)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [📋 Prerequisites](#-prerequisites)
+  - [⚙️🖥️ Manual Setup for Windows](#️-manual-setup-for-windows)
+    - [Step 1: Download `bolt.zip`](#step-1-download-boltzip)
+    - [Step 2: Extract to Installation Directory](#step-2-extract-to-installation-directory)
+    - [Step 3: Add to Environment Variables (PATH)](#step-3-add-to-environment-variables-path)
+      - [Option 1: Via Windows GUI](#option-1-via-windows-gui)
+      - [Option 2: Via PowerShell](#option-2-via-powershell)
+    - [Step 4: Verify Installation](#step-4-verify-installation)
+  - [⚙️💻 Manual Setup for Linux \& macOS](#️-manual-setup-for-linux--macos)
+    - [Step 1: Download and Extract](#step-1-download-and-extract)
+    - [Step 2: Clean Up Windows Batch File](#step-2-clean-up-windows-batch-file)
+    - [Step 3: Make Launcher Executable](#step-3-make-launcher-executable)
+    - [Step 4: Configure Shell Profile (`.bashrc` or `.zshrc`)](#step-4-configure-shell-profile-bashrc-or-zshrc)
+    - [Step 5: Reload Shell and Verify](#step-5-reload-shell-and-verify)
+  - [⚙️📱 Setup Process for Android Termux](#️-setup-process-for-android-termux)
+    - [Step 1: Install Required Apps](#step-1-install-required-apps)
+    - [Step 2: Configure Termux Environment](#step-2-configure-termux-environment)
+    - [Step 3: Extract Bolt CLI](#step-3-extract-bolt-cli)
+      - [Method A: Terminal Command (Recommended - Fast \& Easy)](#method-a-terminal-command-recommended---fast--easy)
+      - [Method B: MT Manager GUI](#method-b-mt-manager-gui)
+    - [Step 4: Configure `~/.bashrc`](#step-4-configure-bashrc)
+    - [Step 5: Reload and Verify](#step-5-reload-and-verify)
+  - [🚀 Quick Automated Installers (One-Line Setup)](#-quick-automated-installers-one-line-setup)
+    - [Windows (PowerShell)](#windows-powershell)
+    - [Linux \& macOS (Terminal)](#linux--macos-terminal)
+    - [Android Termux](#android-termux)
+  - [🧠 How It Works Under The Hood](#-how-it-works-under-the-hood)
+    - [Architecture Diagram](#architecture-diagram)
+    - [Key Components](#key-components)
+  - [🧪 Test Your First Extension Build](#-test-your-first-extension-build)
+  - [❓ Troubleshooting \& FAQ](#-troubleshooting--faq)
 
 ---
 
-## 1. Getting Started & Scaffolding
+## 📋 Prerequisites
 
-### Scaffolding a New Project
+Bolt CLI requires a **Java Runtime Environment (JRE or JDK 11+, JDK 17 recommended)** to execute.
 
-To create a new extension project, navigate to your desired directory and execute:
+> [!NOTE]
+> **No Standalone `javac` or Android Studio Required!**
+> Bolt bundles its own Eclipse Compiler for Java (`ecj.jar`), Android SDK definitions (`android.jar`), D8 Dex compiler, and R8 toolchains. Any standard Java runtime (`java`) is sufficient to build extensions.
 
+Verify your Java version:
 ```bash
-bolt create MyAwesomeExtension
+java -version
+```
+If Java is not installed:
+- **Windows**: Download from [Adoptium OpenJDK 17](https://adoptium.net/) or Microsoft OpenJDK.
+- **Linux (Ubuntu/Debian)**: `sudo apt update && sudo apt install -y openjdk-17-jdk`
+- **macOS**: `brew install openjdk@17`
+- **Android Termux**: `pkg install -y openjdk-17`
+
+---
+
+## ⚙️🖥️ Manual Setup for Windows
+
+### Step 1: Download `bolt.zip`
+Download the latest `bolt.zip` from the [Bolt CLI GitHub Releases](https://github.com/TechHamara/bolt-cli/releases/latest).
+
+### Step 2: Extract to Installation Directory
+1. Create a folder named `Bolt` (e.g., `C:\Bolt` or `%LOCALAPPDATA%\Bolt`).
+2. Extract the contents of `bolt.zip` into this folder.
+3. Your folder structure should look like:
+   ```text
+   C:\Bolt\
+   ├── bin\
+   │   ├── bolt.bat
+   │   ├── bolt
+   │   └── bolt.jar
+   ├── libs\
+   │   ├── android.jar
+   │   └── tools\
+   └── icon.png
+   ```
+
+### Step 3: Add to Environment Variables (PATH)
+
+#### Option 1: Via Windows GUI
+1. Press `Win + R`, type `sysdm.cpl`, and press Enter.
+2. Go to the **Advanced** tab and click **Environment Variables**.
+3. Under **User variables** (or System variables):
+   - *(Optional)* Click **New**, set Variable name: `BOLT_HOME`, Variable value: `C:\Bolt`.
+   - Select the **Path** variable and click **Edit**.
+   - Click **New** and add the path to the `bin` folder: `C:\Bolt\bin`.
+4. Click **OK** on all dialogs to save changes.
+
+#### Option 2: Via PowerShell
+Run PowerShell as Administrator or standard user:
+```powershell
+# Set BOLT_HOME
+[Environment]::SetEnvironmentVariable("BOLT_HOME", "C:\Bolt", "User")
+
+# Append bin folder to PATH
+$currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($currentPath -notlike "*C:\Bolt\bin*") {
+    [Environment]::SetEnvironmentVariable("Path", "$currentPath;C:\Bolt\bin", "User")
+}
 ```
 
-This starts an interactive scaffolding wizard that sets up:
-
-1. **Package Identifier**: Your reverse-domain structure (e.g. `com.mycompany.myawesomeextension`).
-2. **Language Selection**: Scaffolds starter templates in **Java** or **Kotlin**. (Note: Both languages can be used together in the same project directory!)
-3. **IDE Integration**: Automatically configures files for **VS Code** (generating `.vscode/settings.json`), **IntelliJ IDEA/Android Studio** (generating `.idea/` configs), or both. This allows instant classpath autocompletion for resolved JVM libraries.
+### Step 4: Verify Installation
+Open a **new** Command Prompt or PowerShell window and run:
+```cmd
+bolt -v
+```
+You should see the installed Bolt CLI version and system information.
 
 ---
 
-## 2. Project Directory Architecture
+## ⚙️💻 Manual Setup for Linux & macOS
 
-A standard Bolt CLI project is organized cleanly to keep your codebase modular and maintainable:
+### Step 1: Download and Extract
+Open your terminal and run:
+```bash
+# Create directory
+mkdir -p "$HOME/Bolt"
+
+# Download the latest package
+curl -L https://github.com/TechHamara/bolt-cli/releases/latest/download/bolt.zip -o "$HOME/Bolt/bolt.zip"
+
+# Extract
+unzip -o "$HOME/Bolt/bolt.zip" -d "$HOME/Bolt"
+rm -f "$HOME/Bolt/bolt.zip"
+```
+
+### Step 2: Clean Up Windows Batch File
+Remove the Windows launcher script:
+```bash
+rm -f "$HOME/Bolt/bin/bolt.bat"
+```
+
+### Step 3: Make Launcher Executable
+```bash
+chmod +x "$HOME/Bolt/bin/bolt"
+```
+
+### Step 4: Configure Shell Profile (`.bashrc` or `.zshrc`)
+Determine which shell you are using (`echo $SHELL`). If using **Zsh** (default on modern macOS), edit `~/.zshrc`. If using **Bash** (default on Linux), edit `~/.bashrc`.
+
+#### For JDK 11 to 23:
+Add the following lines to your profile:
+```bash
+# Bolt CLI Configuration
+export BOLT_HOME="$HOME/Bolt"
+export PATH="$PATH:$BOLT_HOME/bin"
+
+bolt() {
+    java -jar "$BOLT_HOME/bin/bolt.jar" "$@"
+}
+```
+
+#### For JDK 24 and above:
+JDK 24+ displays warnings on native access; add the `--enable-native-access` flag:
+```bash
+# Bolt CLI Configuration
+export BOLT_HOME="$HOME/Bolt"
+export PATH="$PATH:$BOLT_HOME/bin"
+
+bolt() {
+    java --enable-native-access=ALL-UNNAMED -jar "$BOLT_HOME/bin/bolt.jar" "$@"
+}
+```
+
+### Step 5: Reload Shell and Verify
+```bash
+source ~/.bashrc   # On Linux / Bash
+# or
+source ~/.zshrc    # On macOS / Zsh
+
+bolt -v
+```
+
+---
+
+## ⚙️📱 Setup Process for Android Termux
+
+Compile extensions directly on your Android phone with zero computer requirement!
+
+### Step 1: Install Required Apps
+1. **Termux App**: Download the latest release from [Termux GitHub Releases](https://github.com/termux/termux-app/releases) (recommended: `termux-app_v..._arm64-v8a.apk`) or from [F-Droid](https://f-droid.org/en/packages/com.termux/).
+   *(Do NOT install Termux from Google Play Store as that version is deprecated).*
+2. *(Optional)* **MT Manager**: Install MT Manager APK if you want a visual file manager for Android.
+
+### Step 2: Configure Termux Environment
+Open the Termux app and execute the following commands:
+```bash
+# 1. Grant storage permissions (tap Allow on prompt)
+termux-setup-storage
+
+# 2. Upgrade Termux packages
+pkg upgrade -y
+
+# 3. Install OpenJDK 17, unzip, and curl
+pkg install openjdk-17 unzip curl -y
+```
+
+### Step 3: Extract Bolt CLI
+
+#### Method A: Terminal Command (Recommended - Fast & Easy)
+Run these commands inside Termux:
+```bash
+mkdir -p "$HOME/Bolt"
+curl -L https://github.com/TechHamara/bolt-cli/releases/latest/download/bolt.zip -o "$HOME/Bolt/bolt.zip"
+unzip -o "$HOME/Bolt/bolt.zip" -d "$HOME/Bolt"
+rm -f "$HOME/Bolt/bolt.zip"
+chmod +x "$HOME/Bolt/bin/bolt"
+```
+
+#### Method B: MT Manager GUI
+1. Download `bolt.zip` using your Android mobile browser.
+2. Open **MT Manager**.
+3. Add Termux storage: Click menu -> Add local storage -> Navigate to `/data/data/com.termux/files/home`.
+4. Create a folder named `Bolt` in Termux home.
+5. Extract the downloaded `bolt.zip` inside `$HOME/Bolt`.
+6. Delete `bolt.bat` from `bin/`.
+
+### Step 4: Configure `~/.bashrc`
+In Termux, append the Bolt configuration to `.bashrc`:
+```bash
+cat << 'EOF' >> ~/.bashrc
+
+# Bolt CLI Configuration
+export BOLT_HOME="$HOME/Bolt"
+export PATH="$PATH:$BOLT_HOME/bin"
+
+bolt() {
+    java -jar "$BOLT_HOME/bin/bolt.jar" "$@"
+}
+EOF
+```
+
+### Step 5: Reload and Verify
+Reload your environment or restart Termux:
+```bash
+source ~/.bashrc
+
+bolt -v
+```
+You are all set! You can now create and compile extensions on Android.
+
+---
+
+## 🚀 Quick Automated Installers (One-Line Setup)
+
+If you prefer an automated installation that handles downloading, extracting, and configuring environment variables automatically:
+
+### Windows (PowerShell)
+```powershell
+iwr https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/install.ps1 -useb | iex
+```
+
+### Linux & macOS (Terminal)
+```bash
+curl https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/install.sh -fsSL | sh
+```
+
+### Android Termux
+```bash
+termux-setup-storage
+curl https://raw.githubusercontent.com/TechHamara/bolt-cli/main/scripts/install/install-termux.sh -fsSL | bash
+```
+
+---
+
+## 🧠 How It Works Under The Hood
+
+### Architecture Diagram
 
 ```text
-MyAwesomeExtension/
-├── assets/             <-- Static assets (images, JSONs, icons)
-├── deps/               <-- Local .jar or .aar dependencies
-├── out/                <-- Generated .aix and documentation
-│   ├── MyExtension.aix
-│   └── extension.txt
-├── src/                <-- Java & Kotlin source files
-│   ├── com/company/    <-- Source files matching package
-│   ├── AndroidManifest.xml  <-- Custom Android Manifest
-│   └── proguard-rules.pro   <-- Custom ProGuard rules
-├── bolt.yml            <-- Project configuration file
-├── README.md           <-- Documentation readme
-└── tree.txt            <-- Visual directory tree (auto-generated by `bolt tree`)
+                        ┌───────────────────────────────┐
+                        │   User Command (e.g. `bolt`)  │
+                        └───────────────┬───────────────┘
+                                        │
+                         Executes launcher shell/batch
+                                        │
+                                        ▼
+                        ┌───────────────────────────────┐
+                        │ java -jar $BOLT_HOME/bin/...  │
+                        └───────────────┬───────────────┘
+                                        │
+                                        ▼
+       ┌─────────────────────────────────────────────────────────────────┐
+       │                   BoltLocator Auto-Discovery                    │
+       │  1. Check explicit $BOLT_HOME environment variable              │
+       │  2. Dynamic codeSource reflection from active bolt.jar location  │
+       │  3. Fallback to platform standard paths (%LOCALAPPDATA%/Bolt)   │
+       └────────────────────────────────┬────────────────────────────────┘
+                                        │
+                                        ▼
+       ┌─────────────────────────────────────────────────────────────────┐
+       │                   In-Process Compiler Engine                    │
+       │  • Eclipse Compiler for Java (ECJ) -> compiles Java source      │
+       │  • Kotlin Compiler Embeddable      -> compiles Kotlin source    │
+       │  • Android SDK (libs/android.jar)  -> type & component binding  │
+       │  • D8 / Desugar Engine             -> generates classes.dex     │
+       │  • Mini-NDK Toolchain              -> builds C/C++ native .so   │
+       │  • In-Process ZIP Archive Engine   -> packages final .aix       │
+       └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Key Folders
-
-* **`assets/`**: Put static media or files here. Make sure to declare them in the `assets` block of `bolt.yml` to bundle them.
-* **`deps/`**: Put local dependency archives here. You can drop JAR or AAR files directly, and satisfy compilation and runtime classpaths instantly.
-* **`out/`**: Holds compiled assets. After `bolt build` finishes successfully, the output `.aix` bundle and auto-generated block specs documentation `extension.txt` reside here.
-
----
-
-## 3. Configuration Reference (`bolt.yml`)
-
-The behavior of the compiler, optimizer, and packager is driven entirely by the `bolt.yml` file located at the root of the project. Below is the complete key reference:
-
-```yaml
-# Developer credit displayed in metadata/docs
-author: 'Your Name'
-
-# Minimum Android SDK level supported by the extension (e.g. API 19 = Android 4.4)
-min_sdk: 19
-
-# Optional: compile Android SDK API level (defaults to 35)
-# compile_sdk: 35
-
-# Enable Java 8 desugaring (allows using lambda expressions, streams, etc.)
-desugar: true
-
-# Enable R8 optimization pipeline
-R8: true
-
-# Enable ProGuard shrinking and optimization (defaults to false)
-proguard: false
-
-# Specify a custom ProGuard version to download and execute
-proguard_version: '7.8.2'
-
-# Strip heavyweight App Inventor metadata annotations post-compilation to save space
-deannonate: true
-
-# Automatically increment components' version counts inside source code on each build
-auto_version: true
-
-# External dependencies (remote Maven coordinates or local jars/aars in deps/)
-dependencies:
-  - example.jar
-  - com.google.code.gson:gson:2.10.1
-
-# Compile-time dependencies (not bundled into the output AIX file)
-provided_dependencies:
-  - com.google.android.material:material:1.9.0
-
-# Assets list to bundle inside the extension
-assets:
-  - data.json
-
-# Custom Maven repositories (JitPack, Central, and Google are pre-configured)
-repositories:
-  - https://jitpack.io
-```
+### Key Components
+1. **Dynamic `BoltLocator` Engine**:
+   Bolt does not hardcode filesystem paths. When `bolt.jar` is launched, `BoltLocator` dynamically resolves its root folder by checking parent directories or the `BOLT_HOME` environment variable. This allows Bolt to be placed in any directory or portable USB drive.
+2. **Embedded ECJ (Eclipse Compiler for Java)**:
+   Instead of requiring a heavy external JDK compiler (`javac`), Bolt bundles `ecj.jar` inside `libs/tools/`. Java source code is compiled directly in-process within milliseconds.
+3. **Pure Universal Bytecode**:
+   Because the entire compilation pipeline is written in Kotlin and Java bytecode, it runs natively on ARM64 (mobile phones, Apple Silicon M1/M2/M3) and x86_64 without needing platform-specific binary recompilation.
 
 ---
 
-## 4. The Dependency Classpath Model
+## 🧪 Test Your First Extension Build
 
-Selecting the correct classpath scope is essential to prevent duplicate class runtime crashes inside App Inventor APK compilations.
+Once installed, test that everything works end-to-end:
 
-### Scope A: Normal Dependencies (`dependencies`)
+1. **Create a test extension**:
+   ```bash
+   bolt create HelloBolt
+   ```
+   Select Java or Kotlin when prompted.
 
-* **Usage**: Third-party libraries that **do not** pre-exist on the user's host App Inventor companion or compile-time environments.
-* **Result**: Compiled and packed directly inside the extension's `AndroidRuntime.jar` inside the `.aix` bundle.
-* **Warning**: Do not bundle heavy Android support libraries, play services, or Kotlin stdlibs inside this block unless absolutely necessary, to avoid **Duplicate Class Compilation Crashes** during final APK packaging.
-
-### Scope B: Provided Dependencies (`provided_dependencies`)
-
-* **Usage**: Core libraries that already exist at runtime inside the App Inventor companion/runtime environment (such as Kotlin stdlib, App Inventor components runtime, or Android support library classes).
-* **Result**: Available to Java/Kotlin compilers (`javac`/`kotlinc`) for a successful compile, but **excluded** from the final `.aix` file.
-* **Benefits**: Guarantees ultra-tiny `.aix` file sizes and complete compatibility with the host runtime.
-
----
-
-## 5. AndroidManifest.xml Integration
-
-Bolt CLI fully integrates Android Manifest merging. Place your custom manifest at `src/AndroidManifest.xml` to declare services, providers, permissions, or receivers.
-
-### Shorthand Package Name Expansion
-
-Writing long package paths inside the manifest is tedious. Bolt CLI introduces short-hand dot prefixes:
-
-1. **Single Dot Prefix (`.MyClass`)**: Expands automatically to `<package_name>.MyClass`.
-
-   ```xml
-   <!-- Expands to: com.mycompany.myawesomeextension.MyService -->
-   <service android:name=".MyService" />
+2. **Navigate into the project**:
+   ```bash
+   cd HelloBolt
    ```
 
-2. **Triple Dot Prefix (`...MyAlias`)**: Also expands to the fully qualified class name package.
-
-   ```xml
-   <activity-alias android:name="...MyActivityAlias" android:targetActivity=".MyActivity" />
+3. **Build the extension**:
+   ```bash
+   bolt build
    ```
 
-### Manifest merger conflicts
+4. **Result**:
+   Your compiled extension `.aix` will be available in the `out/` folder:
+   ```text
+   out/
+   └── com.example.HelloBolt.aix
+   ```
 
-If a third-party dependency AAR brings its own manifest rules that conflict with your setup, you can safely use standard Android Tools attributes to resolve conflicts during compilation:
+---
 
-```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools">
-    <application>
-        <service android:name=".MyService" tools:replace="android:exported" />
-    </application>
-</manifest>
+## ❓ Troubleshooting & FAQ
+
+### Q1: `command not found: bolt`
+- **Cause**: The `bin` directory is not added to your `PATH`, or you have not reloaded your shell.
+- **Fix**:
+  - On Windows: Verify that `C:\Bolt\bin` is present in your User `Path`. Restart Command Prompt.
+  - On Linux/macOS/Termux: Run `source ~/.bashrc` or `source ~/.zshrc`. Ensure `export PATH="$PATH:$BOLT_HOME/bin"` is in your profile.
+
+### Q2: `Permission denied: /.../bin/bolt`
+- **Fix**: Run `chmod +x $HOME/Bolt/bin/bolt`.
+
+### Q3: `java: command not found`
+- **Fix**: Java is not installed or not in your system PATH.
+  - Windows: Install [Adoptium OpenJDK 17](https://adoptium.net/).
+  - Linux: `sudo apt install -y openjdk-17-jdk`
+  - Termux: `pkg install openjdk-17 -y`
+
+### Q4: Upgrading Bolt CLI
+To update an existing installation:
+```bash
+bolt upgrade
 ```
-
----
-
-## 6. Bytecode Optimization & Size Shrinking
-
-Bytecode footprint size is a key metric in extension development. Bolt CLI provides three highly powerful optimization pipelines:
-
-### 1. Bytecode Shrinking (R8 & ProGuard)
-
-By setting `R8: true` or `proguard: true` in your `bolt.yml`, the compilation pipeline runs structural code shrinking:
-
-* Discards all unused Java/Kotlin standard library classes and methods.
-* Shrinks class scopes.
-* Customize keeping patterns inside `src/proguard-rules.pro`:
-
-  ```proguard
-  # Preserve specific classes from being optimized or stripped
-  -keep class com.mycompany.myawesomeextension.SpecialHelper { *; }
-  -dontwarn com.mycompany.myawesomeextension.**
-  ```
-
-### 2. Metadata Annotation Stripping (`deannonate`)
-
-App Inventor annotations (`@SimpleEvent`, `@SimpleFunction`, etc.) are converted to heavyweight runtime metadata.
-
-* Setting `deannonate: true` automatically strips these annotations post-compile.
-* Reduces `.aix` binary size significantly while fully preserving standard blocks loading.
-
-### 3. Kotlin stdlib size optimization
-
-Kotlin stdlib adds approximately 1.5MB to your `.aix` file. To shrink this:
-
-* **Method A**: Use `provided_dependencies` if standard Kotlin stdlibs are present on your target companion player.
-* **Method B**: Configure ProGuard to discard unused Kotlin helper files inside `proguard-rules.pro`.
-
----
-
-## 7. Automated Project Migration & Safe Backups
-
-Upgrading legacy extensions to modern Bolt CLI structures is fully automated and safe.
-
-### Automated pre-migration backups
-
-Whenever the `bolt migrate` command is executed, Bolt CLI performs an automated backup:
-
-1. It zips the entire current project directory.
-2. Saves it as `<projectName>_backup_<timestamp>.zip` directly in the project root folder.
-3. Automatically ignores heavy directories like `.git`, `.bolt`, `.dart_tool`, and `.rush` to keep the backup ZIP clean and small.
-
-### Supported migration subcommands
-
-* `bolt migrate rush`: Upgrades a legacy Rush project, converting `rush.yml` to `bolt.yml` automatically.
-* `bolt migrate fast`: Upgrades a legacy Fast CLI project, converting `fast.yml` to `bolt.yml`.
-* `bolt migrate template`: Converts a traditional App Inventor `extension-template` directory setup into a clean Bolt project, restructuring the `src/` layout.
-* `bolt migrate ai2`: Converts raw App Inventor components sources into a modular Bolt CLI extension project.
-
----
-
-## 8. Complete CLI Command Reference
-
-| Command | Description |
-|---|---|
-| `bolt build` | Builds the extension project, generating `.aix` in `out/`. |
-| `bolt clean` | Deletes old build artifacts, temporary cache files, and intermediate DEX outputs. |
-| `bolt create <name>` | Scaffolds a new Java/Kotlin extension project interactively. |
-| `bolt daemon <start/stop/status>` | Manages the persistent background compiler daemon on port 19090 for **sub-4s builds**. |
-| `bolt sync` / `bolt sync dev` | Syncs project dependencies; `sync dev` downloads & updates `desugar_jdk_libs:2.1.5` and configuration files from Maven. |
-| `bolt add <coordinate>` | Automatically searches Maven Central, resolves dependencies, and adds them to `bolt.yml`. |
-| `bolt run` | Starts a live testing session with hot-reloading to an Android device over WebSocket. |
-| `bolt auth` | Manages offline RSA-2048 licensing for premium extensions. |
-| `bolt test` | Executes local JUnit 5 / Robolectric unit tests without needing an emulator. |
-| `bolt tree` | Displays visual file directory structure and saves it to `tree.txt`. |
-| `bolt migrate <type>` | Safely migrates legacy projects (`rush`, `fast`, `template`, `ai2`) with automatic zip backup. |
-| `bolt upgrade` | Upgrades Bolt CLI to the latest version with interactive prompts and real-time progress bar. |
-
+Or simply download the newest `bolt.zip` and extract it over your existing `Bolt` folder.

@@ -1,6 +1,38 @@
 # Release Notes
 
-## **1.1.1 (Latest)**
+## **2.0.0 (Latest)**
+
+### ⚡ Bolt CLI 2.0.0 (Universal Edition) – Build Faster, Compile Smarter
+
+Bolt CLI 2.0.0 is a major milestone release delivering a unified, lightning-fast universal build system and toolchain for **MIT App Inventor 2** extensions and distributions (Kodular, Niotron, AndroidBuilder, etc.).
+
+#### 🚀 Universal Engine Architecture
+- **In-Process Kotlin & ECJ JVM Engine**: Replaced platform-specific binary dependencies with an integrated, universal JVM compiler engine that runs natively across Windows, macOS (Intel & Apple Silicon), Linux, and Android Termux with Java 11+.
+- **Unified Release Package (`bolt.zip`)**: Streamlined multi-platform packaging into a single cross-platform universal distribution archive containing launchers (`bolt.bat` and `bolt`) and self-contained toolchain libraries.
+- **Dynamic `BoltLocator` Discovery**: Automatically resolves `$BOLT_HOME`, script relative paths, and OS standard directories without hardcoded filesystem paths.
+
+#### ⚡ Performance & Daemon
+- **Persistent Compiler Daemon (`bolt daemon`)**: Keep Kotlin compiler, ECJ, D8, and R8 toolchains hot in RAM, cutting incremental extension build times to **under 3–4 seconds**.
+- **Optimized Release Builds**: Defaulted release builds (`-r`) to R8 with tuned ProGuard JVM heap parameters and aggressive optimizations.
+- **D8 DEX Incremental Caching**: Instant Dalvik/ART `classes.dex` generation with MD5 bytecode caching for zero-latency cache hits.
+- **Optimized Classpath Resolution**: Dynamically discovers AndroidX and runtime libraries with high-performance class scanning and maximum ZIP compression.
+
+#### 🖥️ Developer Experience & Diagnostics
+- **Clean Terminal Output & System Telemetry**: Distraction-free bullet logs during compilation paired with detailed real-time hardware telemetry (CPU cores, RAM usage, storage space, OS platform) saved to `.bolt/BuildLog.txt`.
+- **Interactive Upgrade (`bolt upgrade`)**: Built-in interactive upgrade workflow featuring Fresh (full package) and InPlace update modes with real-time download progress visualizer, transferred megabytes, and download speed.
+- **Auto-Injected Helper Enums (`OptionList`)**: Quick scaffolding via `bolt generate helper <type>` and `bolt create -t <str|int>` with automatic `@SimpleProperty` injection into component source.
+- **Auto-AIDL Compilation**: Automatic discovery and compilation of `.aidl` interface files in `src/` to Java stubs.
+
+#### 🧪 Testing, Live Reload & Tooling
+- **Official JUnit 5 Unit Testing (`bolt test`)**: Execute unit tests locally via JUnit 5 Platform Console Standalone Runner with live progress trees.
+- **Live Companion Hot-Reloading (`bolt run`)**: Instant wireless extension testing over WebSocket (port 9000) and Wi-Fi UDP auto-discovery (port 9001) without rebuilding full APKs.
+- **Mini-NDK & Native C/C++ Support**: Compile ultra-compact `.so` libraries out-of-the-box (`-Oz`, `-flto`, `--strip-all`) with automated `@UsesNativeLibraries` ABI mapping into `component_build_infos.json`.
+- **Google Maven Dev Sync (`bolt sync dev`)**: Automated sync and updating of `desugar_jdk_libs:2.1.5` and configuration files.
+- **Offline RSA-2048 Licensing (`bolt auth`)**: Cryptographic licensing system tied to App Inventor developer emails.
+
+---
+
+## **1.1.1**
 
 - **Interactive `bolt upgrade` Command**:
   - Displays version and download size details (`Current version: v1.1.0`, `New version: v1.1.1`, `Download size: 589.14 MB`).
@@ -8,7 +40,7 @@
   - Added mode selection prompt: `Select update mode? [Fresh/InPlace] type 2 for InPlace, (Default: Fresh)`.
   - Fresh mode downloads full `bolt-win.zip` for a complete installation update.
   - InPlace mode downloads `bin.zip` and replaces only `bolt.exe` at installation path (`$BOLT_HOME\bin\bolt.exe`).
-  - **Real-time Progress Visualizer**: Added live download percentage, downloaded size, and real-time speed display (`Downloading: 12.00% (43.45 MB/362.14 MB) | 3.94 MB/s |`) matching Fast CLI behavior across CLI and PowerShell installation scripts.
+  - **Real-time Progress Visualizer**: Added live download percentage, downloaded size, and real-time speed display (`Downloading: 12.00% (43.45 MB/362.14 MB) | 3.94 MB/s |`).
 
 ## **1.1.0**
 

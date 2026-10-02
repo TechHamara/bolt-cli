@@ -1,14 +1,5 @@
-param (
-    [Alias("v")]
-    [string]$Version = "2.0.0"
-)
-
 $ErrorActionPreference = 'Stop'
-Write-Host "Building Universal Bolt CLI v$Version..." -ForegroundColor Cyan
-
-# 1. Run Gradle assembleDistribution
-Write-Host "Running Gradle assembleDistribution..." -ForegroundColor Yellow
-.\gradlew.bat assembleDistribution
+Write-Host "Packaging platform ZIPs..." -ForegroundColor Cyan
 
 $distDir = "distribution"
 $binDir = "$distDir\bin"
@@ -21,15 +12,15 @@ Copy-Item "$distDir\bolt.jar" "$binDir\bolt.jar" -Force
 Copy-Item "$distDir\bolt.bat" "$binDir\bolt.bat" -Force
 Copy-Item "$distDir\bolt" "$binDir\bolt" -Force
 
-# Ensure icon.png is ONLY at the root of distribution (outside libs/ and bin/)
+# Ensure icon.png is ONLY outside libs/ (at root of distribution)
 if (Test-Path "$binDir\icon.png") { Remove-Item "$binDir\icon.png" -Force }
 if (Test-Path "$distDir\libs\icon.png") { Remove-Item "$distDir\libs\icon.png" -Force }
 if (Test-Path "$distDir\libs\tools\icon.png") { Remove-Item "$distDir\libs\tools\icon.png" -Force }
 if (Test-Path "$distDir\libs\tools\aidl\icon.png") { Remove-Item "$distDir\libs\tools\aidl\icon.png" -Force }
 
-Write-Host "Packaging universal distribution ZIP..." -ForegroundColor Yellow
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
+# Clean up any old ZIP files
 $oldZips = @("bolt-universal.zip", "bolt-win.zip", "bolt-linux.zip", "bolt-mac.zip", "bolt-termux.zip", "bolt.zip")
 foreach ($zipName in $oldZips) {
     if (Test-Path $zipName) { Remove-Item $zipName -Force }
@@ -53,7 +44,7 @@ if (Test-Path "$stagingDir\libs\icon.png") { Remove-Item "$stagingDir\libs\icon.
 if (Test-Path "$stagingDir\libs\tools\icon.png") { Remove-Item "$stagingDir\libs\tools\icon.png" -Force }
 if (Test-Path "$stagingDir\libs\tools\aidl\icon.png") { Remove-Item "$stagingDir\libs\tools\aidl\icon.png" -Force }
 
-Write-Host "Compressing universal package bolt.zip (Fresh, with bundled Mini-NDK)..." -ForegroundColor Yellow
+Write-Host "Compressing universal release package bolt.zip (Fresh)..." -ForegroundColor Yellow
 $universalZip = "bolt.zip"
 [IO.Compression.ZipFile]::CreateFromDirectory((Resolve-Path $stagingDir).Path, $universalZip)
 Write-Host "Created universal $universalZip successfully!" -ForegroundColor Green
@@ -78,4 +69,4 @@ if (Test-Path $updateZip) { Remove-Item $updateZip -Force }
 Write-Host "Created lightweight $updateZip successfully (without icon.png)!" -ForegroundColor Green
 
 Remove-Item $updateStaging -Recurse -Force
-Write-Host "Build and packaging complete! (bolt.zip & update.zip)" -ForegroundColor Green
+Write-Host "All release packages (bolt.zip & update.zip) packaged successfully!" -ForegroundColor Green

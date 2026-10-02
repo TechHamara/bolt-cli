@@ -1,23 +1,49 @@
-# Files and directories created by IntelliJ IDEA
-/.idea
+# Gradle Build System & Cache
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Bolt Compilation & Distribution Artifacts
+distribution/
+out/
+.bolt/
+*.zip
+*.tar
+*.tar.gz
+
+# IDE and Editor Directories
+.idea/
 *.iml
-/.vscode
+*.iws
+*.ipr
+.vscode/
+.project
+.classpath
+.settings/
 
-# Files and directories created by pub
-.dart_tool/
-.packages
-pubspec.lock
+# JVM & Crash Dumps
+*.class
+*.hprof
+hs_err_pid*
+replay_pid*
 
-# Conventional directory for build outputs
-/build/
+# Log Files & Telemetry
+*.log
+BuildLog.txt
 
-# Directory created by dartdoc
-/doc/api/
-
-/misc/
-/temp/
-
-*.g.dart
-/scratch.dart
-
+# Operating System Files
 .DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Temporary & Scratch Files
+scratch/
+*.tmp
+*.bak
+*.swp
+*~
