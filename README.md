@@ -1,7 +1,7 @@
 # ⚡ Bolt CLI (Universal Edition)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/TechHamara/bolt-cli/main/media/bolt-logo.png" alt="Bolt CLI Logo" width="200" onerror="this.style.display='none'"/>
+  <img width="480" height="264" alt="bolt" src="https://github.com/user-attachments/assets/3e2d3025-a83c-49aa-8d75-217bbd22b65e" />
 </p>
 
 <p align="center">
