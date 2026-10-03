@@ -41,6 +41,7 @@ Powered by an **in-process Kotlin & ECJ JVM compiler engine**, Bolt runs univers
 
 > [!IMPORTANT]
 > **Credits & Acknowledgements**: Bolt CLI is built upon the excellent foundation of the original [Rush CLI](https://github.com/shreyashsaitwal/rush-cli) project created by [Shreyash Saitwal](https://github.com/shreyashsaitwal). We express our sincere gratitude and credit to Shreyash and all the Rush contributors for their pioneering work in building compilation toolsets for the App Inventor community.
+> * Thanks to **[Fast CLI](https://community.appinventor.mit.edu/t/fast-an-efficient-way-to-build-publish-extensions/129103?u=techhamara)** by **jewel** to innovate me to there features functions ideas to help us the excellent innovation develop and implement on **Boltcli**.
 
 ---
 
