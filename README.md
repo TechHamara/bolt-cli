@@ -228,8 +228,8 @@ When active, `bolt build` automatically delegates to the daemon on port 19090, r
 
 For comprehensive usage guidelines, configurations reference, and architectural deep dives:
 
-* Refer to [Documentation.md](Documentation.md)
-* Read the full offline wiki guide: [WIKI.md](WIKI.md)
+* Refer to [Documentation.md](https://github.com/TechHamara/bolt-cli/wiki)
+* Read the Installation & Setup guide: [here](https://github.com/TechHamara/bolt-cli/wiki/%E2%9A%A1-Bolt-CLI-Installation-&-Setup-Guide)
 
 ---
 
