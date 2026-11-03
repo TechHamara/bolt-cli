@@ -166,7 +166,7 @@ object D8Runner {
 
     private fun calculateBytecodeHash(classFiles: List<File>, config: ConfigParser.BoltConfig): String {
         val digest = MessageDigest.getInstance("MD5")
-        digest.update("minSdk:${config.minSdk};desugar:${config.desugarDex}".toByteArray())
+        digest.update("minSdk:${config.minSdk};desugar:${config.desugarDex};coreLibraryDesugaring:${config.coreLibraryDesugaring}".toByteArray())
         for (file in classFiles.sortedBy { it.absolutePath }) {
             digest.update(file.name.toByteArray())
             digest.update(file.length().toString().toByteArray())
