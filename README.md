@@ -1,7 +1,7 @@
 # ⚡ Bolt CLI (Universal Edition)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/TechHamara/bolt-cli/main/media/bolt-logo.png" alt="Bolt CLI Logo" width="200" onerror="this.style.display='none'"/>
+  <img width="480" height="264" alt="bolt" src="https://github.com/user-attachments/assets/3e2d3025-a83c-49aa-8d75-217bbd22b65e" />
 </p>
 
 <p align="center">
@@ -41,6 +41,7 @@ Powered by an **in-process Kotlin & ECJ JVM compiler engine**, Bolt runs univers
 
 > [!IMPORTANT]
 > **Credits & Acknowledgements**: Bolt CLI is built upon the excellent foundation of the original [Rush CLI](https://github.com/shreyashsaitwal/rush-cli) project created by [Shreyash Saitwal](https://github.com/shreyashsaitwal). We express our sincere gratitude and credit to Shreyash and all the Rush contributors for their pioneering work in building compilation toolsets for the App Inventor community.
+> * Thanks to **[Fast CLI](https://community.appinventor.mit.edu/t/fast-an-efficient-way-to-build-publish-extensions/129103?u=techhamara)** by **jewel** to innovate me to there features functions ideas to help us the excellent innovation develop and implement on **Boltcli**.
 
 ---
 
@@ -227,8 +228,8 @@ When active, `bolt build` automatically delegates to the daemon on port 19090, r
 
 For comprehensive usage guidelines, configurations reference, and architectural deep dives:
 
-* Refer to [Documentation.md](Documentation.md)
-* Read the full offline wiki guide: [WIKI.md](WIKI.md)
+* Refer to [Documentation.md](https://github.com/TechHamara/bolt-cli/wiki)
+* Read the Installation & Setup guide: [here](https://github.com/TechHamara/bolt-cli/wiki/%E2%9A%A1-Bolt-CLI-Installation-&-Setup-Guide)
 
 ---
 
